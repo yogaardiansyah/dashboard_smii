@@ -11,20 +11,27 @@ use Yajra\DataTables\Facades\DataTables;
 
 class MarshoDepartmentController extends Controller
 {
-    public function index(): mixed
+    public function index(Request $request): mixed
     {
-        if (request()->ajax()) {
+        if ($request->ajax()) {
             $query = MarshoDepartment::withCount('marshoUsers')->select(['id', 'department_name', 'created_at']);
+
             return DataTables::of($query)
-                ->addColumn('users', function ($row) {
-                    return $row->marsho_users_count;
+                ->addColumn('users_count', function ($row) {
+                    return '<span class="badge bg-primary text-white px-2 py-1 rounded" style="background-color: #1e40af;">' . $row->marsho_users_count . ' users</span>';
+                })
+                ->addColumn('created_at_formatted', function ($row) {
+                    return $row->created_at ? $row->created_at->format('d M Y, H:i') : '-';
                 })
                 ->addColumn('actions', function ($row) {
-                    $edit = "<button type=\"button\" class=\"edit-btn bg-yellow-500 text-white font-bold py-1 px-2 rounded-md transition\" data-id=\"{$row->id}\" data-name=\"".e($row->department_name)."\">Edit</button>";
-                    $delete = "<button type=\"button\" class=\"delete-btn bg-red-600 text-white font-bold py-1 px-2 rounded-md transition\" data-id=\"{$row->id}\">Delete</button>";
-                    return $edit . ' ' . $delete;
+                    $nameEscaped = e($row->department_name);
+
+                    $editBtn = '<button type="button" class="pl-icon-btn pl-icon-btn-edit edit-btn" data-bs-toggle="tooltip" title="Edit Department" data-id="' . $row->id . '" data-name="' . $nameEscaped . '"><i class="fa-solid fa-pen-to-square"></i></button>';
+                    $deleteBtn = '<button type="button" class="pl-icon-btn pl-icon-btn-delete delete-btn" data-bs-toggle="tooltip" title="Delete Department" data-id="' . $row->id . '" data-name="' . $nameEscaped . '"><i class="fa-solid fa-trash-can"></i></button>';
+
+                    return '<div class="flex items-center justify-center gap-2">' . $editBtn . $deleteBtn . '</div>';
                 })
-                ->rawColumns(['actions'])
+                ->rawColumns(['users_count', 'actions'])
                 ->make(true);
         }
 
@@ -41,8 +48,9 @@ class MarshoDepartmentController extends Controller
         $department->loadCount('marshoUsers');
 
         return response()->json([
-            'department' => $department, 
-            'message'    => 'Department created successfully.'
+            'success' => true,
+            'message' => 'Department created successfully.',
+            'data'    => $department
         ], 201);
     }
 
@@ -61,8 +69,9 @@ class MarshoDepartmentController extends Controller
         $marshoDepartment->loadCount('marshoUsers');
 
         return response()->json([
-            'department' => $marshoDepartment,
-            'message'    => 'Department updated successfully.'
+            'success' => true,
+            'message' => 'Department updated successfully.',
+            'data'    => $marshoDepartment
         ], 200);
     }
 
@@ -70,12 +79,16 @@ class MarshoDepartmentController extends Controller
     {
         if ($marshoDepartment->marshoUsers()->exists()) {
             return response()->json([
-                'message' => 'Cannot delete department: It is still assigned to one or more users.'
+                'success' => false,
+                'message' => 'Cannot delete department: It is currently assigned to one or more Marsho users.'
             ], 422);
         }
 
         $marshoDepartment->delete();
 
-        return response()->json(null, 204);
+        return response()->json([
+            'success' => true,
+            'message' => 'Department deleted successfully.'
+        ], 200);
     }
 }

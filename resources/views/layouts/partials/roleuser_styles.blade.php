@@ -155,12 +155,28 @@
     .pl-modal-overlay {
         position: fixed;
         inset: 0;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
         background: rgba(15, 23, 42, 0.66);
+        backdrop-filter: blur(4px);
         padding: 20px;
         display: none; /* Controlled via JS */
         align-items: center;
         justify-content: center;
-        z-index: 9999;
+        z-index: 99999 !important;
+    }
+
+    .pl-modal-overlay.active,
+    .pl-modal-overlay.show,
+    .pl-modal-overlay[style*="display: flex"],
+    .pl-modal-overlay[style*="display: block"] {
+        display: flex !important;
+        opacity: 1 !important;
+        visibility: visible !important;
     }
 
     .pl-modal-panel {

@@ -704,7 +704,7 @@
             <div class="user-profile-badge">
                 <div class="avatar-glow-wrapper">
                     <div class="avatar-glow-ring"></div>
-                    <div class="avatar-box">ðŸ‘‘</div>
+                    <div class="avatar-box">👑</div>
                     <div class="status-dot"></div>
                 </div>
                 <div class="user-text-info">
@@ -720,7 +720,7 @@
                 <!-- Theme Toggle Button (Light/Dark Switcher) -->
                 <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleDashboardTheme()"
                     title="Beralih Mode Terang / Gelap">
-                    <span class="theme-btn-icon" id="theme-btn-icon">â˜€ï¸</span>
+                    <span class="theme-btn-icon" id="theme-btn-icon">☀️</span>
                     <span class="theme-btn-text" id="theme-btn-text">Light Mode</span>
                 </button>
 
@@ -750,7 +750,7 @@
                 <div class="card-shimmer"></div>
 
                 <div class="card-header-badge">
-                    <div class="card-icon-wrapper">ðŸ­</div>
+                    <div class="card-icon-wrapper">🏭</div>
                     <span class="tag-badge">Real-Time</span>
                 </div>
                 <div class="card-body-content">
@@ -779,7 +779,7 @@
                 <div class="card-shimmer"></div>
 
                 <div class="card-header-badge">
-                    <div class="card-icon-wrapper">ðŸ’¼</div>
+                    <div class="card-icon-wrapper">💼</div>
                     <span class="tag-badge">Analytics</span>
                 </div>
                 <div class="card-body-content">
@@ -807,7 +807,7 @@
                 <div class="card-shimmer"></div>
 
                 <div class="card-header-badge">
-                    <div class="card-icon-wrapper">ðŸ›’</div>
+                    <div class="card-icon-wrapper">🛒</div>
                     <span class="tag-badge">Multi-Channel</span>
                 </div>
                 <div class="card-body-content">
@@ -835,7 +835,7 @@
                 <div class="card-shimmer"></div>
 
                 <div class="card-header-badge">
-                    <div class="card-icon-wrapper">ðŸ¬</div>
+                    <div class="card-icon-wrapper">🏬</div>
                     <span class="tag-badge">Stock Control</span>
                 </div>
                 <div class="card-body-content">
@@ -863,7 +863,7 @@
                 <div class="card-shimmer"></div>
 
                 <div class="card-header-badge">
-                    <div class="card-icon-wrapper">ðŸ›¢ï¸</div>
+                    <div class="card-icon-wrapper">🛢️</div>
                     <span class="tag-badge">Oil OSM</span>
                 </div>
                 <div class="card-body-content">
@@ -891,7 +891,7 @@
                 <div class="card-shimmer"></div>
 
                 <div class="card-header-badge">
-                    <div class="card-icon-wrapper">ðŸ¦º</div>
+                    <div class="card-icon-wrapper">🦺</div>
                     <span class="tag-badge">Safety & Weather</span>
                 </div>
                 <div class="card-body-content">
@@ -919,7 +919,7 @@
                 <div class="card-shimmer"></div>
 
                 <div class="card-header-badge">
-                    <div class="card-icon-wrapper">ðŸ”„</div>
+                    <div class="card-icon-wrapper">🔄</div>
                     <span class="tag-badge">Line Status</span>
                 </div>
                 <div class="card-body-content">
@@ -947,7 +947,7 @@
                 <div class="card-shimmer"></div>
 
                 <div class="card-header-badge">
-                    <div class="card-icon-wrapper">ðŸŒ</div>
+                    <div class="card-icon-wrapper">🌍</div>
                     <span class="tag-badge">Eco System</span>
                 </div>
                 <div class="card-body-content">
@@ -971,7 +971,7 @@
         <div class="modal-glass-content relative w-full max-w-5xl overflow-hidden">
             <div class="modal-glass-header flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl">ðŸ¬</span>
+                    <span class="text-2xl">🏬</span>
                     <h3 id="modal-title" class="text-xl font-bold tracking-wide">Warehouse Options</h3>
                 </div>
                 <button type="button"
@@ -996,7 +996,7 @@
                         <div class="card-shimmer"></div>
 
                         <div class="card-header-badge">
-                            <div class="card-icon-wrapper">ðŸ“¦</div>
+                            <div class="card-icon-wrapper">📦</div>
                             <span class="tag-badge">Outward</span>
                         </div>
                         <div class="card-body-content">
@@ -1025,7 +1025,7 @@
                         <div class="card-shimmer"></div>
 
                         <div class="card-header-badge">
-                            <div class="card-icon-wrapper">ðŸ¬</div>
+                            <div class="card-icon-wrapper">🏬</div>
                             <span class="tag-badge">Inward & Temp</span>
                         </div>
                         <div class="card-body-content">
@@ -1038,9 +1038,9 @@
                                 <div>Occupancy: <span id="wi-occupancy" class="font-bold text-sky-500">-</span></div>
                                 <div>Incoming: <span id="wi-daily-incoming"
                                         class="font-bold text-emerald-500">-</span></div>
-                                <div>Suhu 20-25Â°C: <span id="wi-temp-20-25" class="font-bold text-amber-500">-</span>
+                                <div>Suhu 20-25°C: <span id="wi-temp-20-25" class="font-bold text-amber-500">-</span>
                                 </div>
-                                <div>Suhu 5-10Â°C: <span id="wi-temp-5-10" class="font-bold text-cyan-500">-</span>
+                                <div>Suhu 5-10°C: <span id="wi-temp-5-10" class="font-bold text-cyan-500">-</span>
                                 </div>
                             </div>
                         </div>
@@ -1068,7 +1068,7 @@
         <div class="modal-glass-content relative w-full max-w-5xl overflow-hidden">
             <div class="modal-glass-header flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl">ðŸ›¢ï¸</span>
+                    <span class="text-2xl">🛢️</span>
                     <h3 class="text-xl font-bold tracking-wide">Oil Monitoring Options</h3>
                 </div>
                 <button type="button"
@@ -1086,12 +1086,12 @@
                                --icon-border-hover: rgba(234, 179, 8, 0.4);
                                --tag-bg-hover: rgba(234, 179, 8, 0.9);
                                --btn-gradient: linear-gradient(135deg, #ca8a04 0%, #a16207 100%);"
-                        onclick="window.location.href='{{ Route::has('oil.index') ? route('oil.index') : '#' }}'">
+                        onclick="window.location.href='{{ route('oil.index') }}'">
                         <div class="card-glow-bar"></div>
                         <div class="card-shimmer"></div>
 
                         <div class="card-header-badge">
-                            <div class="card-icon-wrapper">ðŸ“ˆ</div>
+                            <div class="card-icon-wrapper">📈</div>
                             <span class="tag-badge">Advanced</span>
                         </div>
                         <div class="card-body-content">
@@ -1115,12 +1115,12 @@
                                --icon-border-hover: rgba(245, 158, 11, 0.4);
                                --tag-bg-hover: rgba(245, 158, 11, 0.9);
                                --btn-gradient: linear-gradient(135deg, #d97706 0%, #ea580c 100%);"
-                        onclick="window.location.href='{{ Route::has('rbd.dashboard') ? route('rbd.dashboard') : '#' }}'">
+                        onclick="window.location.href='{{ route('rbd.dashboard') }}'">
                         <div class="card-glow-bar"></div>
                         <div class="card-shimmer"></div>
 
                         <div class="card-header-badge">
-                            <div class="card-icon-wrapper">ðŸ“¦</div>
+                            <div class="card-icon-wrapper">📦</div>
                             <span class="tag-badge">General</span>
                         </div>
                         <div class="card-body-content">
@@ -1342,12 +1342,12 @@
             if (theme === 'dark') {
                 document.body.classList.add('dark-mode');
                 document.body.classList.remove('light-mode');
-                if (icon) icon.textContent = 'ðŸŒ™';
+                if (icon) icon.textContent = '🌙';
                 if (text) text.textContent = 'Dark Mode';
             } else {
                 document.body.classList.remove('dark-mode');
                 document.body.classList.add('light-mode');
-                if (icon) icon.textContent = 'â˜€ï¸';
+                if (icon) icon.textContent = '☀️';
                 if (text) text.textContent = 'Light Mode';
             }
             if (typeof window.__updateThreeThemeColors === 'function') {
@@ -1463,11 +1463,11 @@
                     const temps = json.temperatureGroups || {};
                     const t20 = document.getElementById('wi-temp-20-25');
                     if (t20) t20.textContent = (temps['Ingredient 20-25'] !== undefined ? temps[
-                        'Ingredient 20-25'] + ' Â°C' : '-');
+                        'Ingredient 20-25'] + ' °C' : '-');
 
                     const t5 = document.getElementById('wi-temp-5-10');
                     if (t5) t5.textContent = (temps['Ingredient 5-10'] !== undefined ? temps['Ingredient 5-10'] +
-                        ' Â°C' : '-');
+                        ' °C' : '-');
 
                     const incoming = json.incoming || [];
                     const incEl = document.getElementById('wi-daily-incoming');
@@ -1481,4 +1481,3 @@
         })();
     </script>
 </x-app-layout>
-

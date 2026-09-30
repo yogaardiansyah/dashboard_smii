@@ -29,12 +29,11 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 12h8M12 8v8" />
                             </svg>
-                            <h3 class="text-xl font-bold">Kanban Board</h3>
+                            <h3 class="text-xl font-bold">Job Kanban Board</h3>
                         </div>
                         <p class="mb-2 leading-relaxed">
-                            Selamat datang di <span class="font-semibold text-indigo-600 dark:text-indigo-400">Kanban
-                                Board</span>! <br>
-                            Di sini Anda dapat melihat, membuat, dan mengelola tugas-tugas yang sedang berjalan.
+                            Welcome to the <span class="font-semibold text-indigo-600">Job Kanban Board</span>! <br>
+                            Track, assign, and coordinate ongoing departmental workflows in real-time.
                         </p>
                     </div>
                     <div class="flex justify-end mb-8 gap-4">
@@ -459,6 +458,15 @@
             .dark-skin .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                 background: #6b7280;
             }
+
+            #createJobModal, #moveStageModal, #forwardJobModal, #completeJobModal, #closeJobModal, #jobDetailModal, #cancelJobModal {
+                z-index: 99999 !important;
+            }
+            #createJobModal:not(.hidden), #moveStageModal:not(.hidden), #forwardJobModal:not(.hidden), #completeJobModal:not(.hidden), #closeJobModal:not(.hidden), #jobDetailModal:not(.hidden), #cancelJobModal:not(.hidden) {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+            }
         </style>
 
 
@@ -546,13 +554,40 @@
 
                     function openModal(id) {
                         const el = document.getElementById(id);
-                        if (el) el.classList.remove('hidden');
-                        else console.error('Modal not found:', id);
+                        if (el) {
+                            el.classList.remove('hidden');
+                            el.style.display = 'flex';
+                        } else {
+                            console.error('Modal not found:', id);
+                        }
                     }
 
                     function closeModal(id) {
-                        document.getElementById(id)?.classList.add('hidden');
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.classList.add('hidden');
+                            el.style.display = 'none';
+                        }
                     }
+
+                    // Backdrop clicks to close modals
+                    ['createJobModal', 'moveStageModal', 'forwardJobModal', 'completeJobModal', 'closeJobModal', 'jobDetailModal', 'cancelJobModal'].forEach(function(modalId) {
+                        const modalEl = document.getElementById(modalId);
+                        if (modalEl) {
+                            modalEl.addEventListener('click', function(e) {
+                                if (e.target === this) {
+                                    closeModal(modalId);
+                                }
+                            });
+                        }
+                    });
+
+                    // Escape key closes modals
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') {
+                            ['createJobModal', 'moveStageModal', 'forwardJobModal', 'completeJobModal', 'closeJobModal', 'jobDetailModal', 'cancelJobModal'].forEach(closeModal);
+                        }
+                    });
 
                     document.body.addEventListener('click', function(e) {
 

@@ -1,118 +1,378 @@
 <x-app-layout>
+    @section('title', 'Manage Marsho Departments')
 
-    @section('title')
-        Job Departments
-    @endsection
+    @include('layouts.partials.vendor.datatables-searchbuilder')
 
-    @include('layouts.partials.vendor.datatables')
-    {{-- CDN Libraries --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Manage Marsho Departments') }}
-        </h2>
-    </x-slot>
+    @push('css')
+        @include('layouts.partials.roleuser_styles')
+        <style>
+            .pl-icon-btn {
+                width: 36px;
+                height: 36px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 10px;
+                border: 1px solid #e2e8f0;
+                background-color: #f8fafc;
+                color: #475569;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                cursor: pointer;
+            }
+            .pl-icon-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            }
+            .pl-icon-btn-edit:hover {
+                background-color: #eff6ff;
+                border-color: #93c5fd;
+                color: #2563eb;
+            }
+            .pl-icon-btn-delete:hover {
+                background-color: #fef2f2;
+                border-color: #fca5a5;
+                color: #dc2626;
+            }
+            /* SearchBuilder Custom Styling for User Management Theme */
+            .dtsb-searchBuilder {
+                background-color: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 14px;
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+            .dtsb-group {
+                background: transparent !important;
+            }
+            .dtsb-criteria {
+                margin-bottom: 8px;
+            }
+            .dtsb-criteria select, .dtsb-criteria input {
+                border-radius: 8px !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 6px 12px !important;
+                font-size: 13px !important;
+            }
+            .dtsb-button {
+                border-radius: 8px !important;
+                font-size: 13px !important;
+                font-weight: 500 !important;
+            }
+            .dataTables_wrapper .dataTables_filter input {
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 6px 12px;
+                margin-left: 8px;
+            }
+            .dataTables_wrapper .dataTables_length select {
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 6px 28px 6px 12px;
+            }
+        </style>
+    @endpush
 
-    <div class="py-12">
-        <div class="mx-auto sm:px-6 lg:px-8">
-            {{-- Komponen Alpine utama: otak dari seluruh interaktivitas halaman --}}
-            <div x-data="{ newDepartment: { department_name: '' }, isModalOpen: false, editDepartment: { id: null, department_name: '' },
-                showSuccessToast(message) { const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); } }); Toast.fire({ icon: 'success', title: message }); },
-                showErrorAlert(message) { Swal.fire({ icon: 'error', title: 'An Error Occurred', text: message, confirmButtonColor: '#d33' }); },
-                async addDepartment() { const response = await fetch('{{ route('marsho-departments.store') }}', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify(this.newDepartment) }); const data = await response.json(); if (response.ok) { this.newDepartment.department_name = ''; this.showSuccessToast(data.message); window.reloadDepartmentsTable && window.reloadDepartmentsTable(); } else { this.showErrorAlert(data.message || 'Failed to add department.'); } },
-                closeModal() { this.isModalOpen = false; },
-                async updateDepartment() { const response = await fetch(`/marsho-departments/${this.editDepartment.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: JSON.stringify(this.editDepartment) }); const data = await response.json(); if (response.ok) { this.closeModal(); this.showSuccessToast(data.message); window.reloadDepartmentsTable && window.reloadDepartmentsTable(); } else { this.showErrorAlert(data.message || 'Failed to update department.'); } }
-            }" @open-edit.window="editDepartment = $event.detail; isModalOpen = true" class="overflow-hidden shadow-xl sm:rounded-lg p-6">
-                
-                <!-- Form Add New (dikontrol oleh Alpine) -->
-                <form @submit.prevent="addDepartment()" class="mb-8">
-                    <h3 class="text-2xl font-medium text-gray-900 mb-4">Marsho JobBoard Departments</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                        <div class="md:col-span-2">
-                            <label for="department_name" class="block text-sm font-medium text-gray-700">Department Name</label>
-                            <input type="text" x-model="newDepartment.department_name" id="department_name" class="mt-1 block w-full rounded-md border-gray-300 text-gray-900 bg-white shadow-sm" required>
-                        </div>
-                        <div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition">Add Department</button>
-                        </div>
-                    </div>
-                </form>
+    <div class="pl-shell mt-4">
+        <!-- Hero Header -->
+        <div class="pl-hero">
+            <span class="pl-hero-kicker">Marsho Operations</span>
+            <div class="pl-hero-title">Departments</div>
+            <p class="pl-hero-copy">
+                Manage operational departments responsible for Marsho jobs, route handovers, and stage approvals.
+            </p>
+            <div class="pl-toolbar">
+                <button type="button" class="pl-btn pl-btn-primary" id="openCreateModalBtn">
+                    <i class="fa-solid fa-plus mr-2"></i> Add Department
+                </button>
+            </div>
+        </div>
 
-                <!-- Tabel Data (Yajra DataTables) -->
-                <div class="mt-6 overflow-x-auto">
-                    <table id="departments-table" class="min-w-full w-full display table table-bordered table-hovered" style="width:100%">
-                        <thead class="bg-blue-500">
+        <!-- Table Card -->
+        <div class="pl-card">
+            <div class="pl-card-head">
+                <div class="pl-card-title">Departments Directory</div>
+                <div class="pl-card-copy">
+                    Browse all active Marsho operational departments. Use SearchBuilder above the table for advanced criteria.
+                </div>
+            </div>
+            <div class="pl-card-body">
+                <div class="pl-table-shell table-responsive">
+                    <table id="departmentsTable" class="table table-bordered table-hover w-full" style="width: 100%;">
+                        <thead>
                             <tr>
-                                <th class="px-6 py-3 text-left text-lg font-medium text-white uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-right text-lg font-medium text-white uppercase tracking-wider">Actions</th>
+                                <th class="w-16 text-center">ID</th>
+                                <th>Department Name</th>
+                                <th class="text-center w-36">Assigned Users</th>
+                                <th class="w-44">Created At</th>
+                                <th class="text-center w-28">Actions</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
-                {{-- Pagination dihapus karena tidak lagi relevan dalam arsitektur AJAX ini --}}
-
-                <!-- Modal Edit (dikontrol oleh Alpine) -->
-                <div x-show="isModalOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
-                    <div @click.away="closeModal()" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
-                        <h3 class="text-lg font-medium mb-4 text-black">Edit Department</h3>
-                        <form @submit.prevent="updateDepartment()">
-                            <div class="space-y-4">
-                                <div>
-                                    <label for="edit_department_name" class="block text-sm font-medium text-gray-700">Department Name</label>
-                                    <input type="text" id="edit_department_name" x-model="editDepartment.department_name" class="mt-1 block w-full rounded-md border-gray-300 bg-white " required>
-                                </div>
-                            </div>
-                            <div class="mt-6 flex justify-end space-x-4">
-                                <button type="button" @click="closeModal()" class="modal-cancel-button bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md transition">Cancel</button>
-                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition">Save Changes</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
+
+    <!-- Create Department Modal -->
+    <div id="createDepartmentModal" class="pl-modal-overlay">
+        <div class="pl-modal-panel pl-modal-panel-md">
+            <div class="pl-modal-header">
+                <div>
+                    <span class="pl-hero-kicker" style="margin-bottom: 2px; color: rgba(255,255,255,0.7); font-size: 11px;">Department Master</span>
+                    <h3 class="pl-modal-title">Add New Department</h3>
+                </div>
+                <button type="button" class="pl-modal-close" data-close-modal="createDepartmentModal">&times;</button>
+            </div>
+            <form id="createDepartmentForm">
+                @csrf
+                <div class="pl-modal-body bg-slate-50">
+                    <div id="createModalAlert" class="alert alert-danger hidden mb-3 py-2 px-3 text-sm"></div>
+
+                    <div class="form-group-custom">
+                        <label for="create_department_name">Department Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="create_department_name" name="department_name" class="form-control-custom" placeholder="e.g. Electrical Engineering" required>
+                        <span class="error-msg hidden" id="error_create_department_name"></span>
+                    </div>
+                </div>
+                <div class="pl-modal-footer">
+                    <button type="button" class="pl-btn pl-btn-neutral" data-close-modal="createDepartmentModal">Cancel</button>
+                    <button type="submit" class="pl-btn pl-btn-primary" id="btnSubmitCreate">
+                        <i class="fas fa-check mr-1.5"></i> Save Department
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Department Modal -->
+    <div id="editDepartmentModal" class="pl-modal-overlay">
+        <div class="pl-modal-panel pl-modal-panel-md">
+            <div class="pl-modal-header">
+                <div>
+                    <span class="pl-hero-kicker" style="margin-bottom: 2px; color: rgba(255,255,255,0.7); font-size: 11px;">Maintenance</span>
+                    <h3 class="pl-modal-title">Edit Department</h3>
+                </div>
+                <button type="button" class="pl-modal-close" data-close-modal="editDepartmentModal">&times;</button>
+            </div>
+            <form id="editDepartmentForm">
+                @csrf
+                @method('PUT')
+                <input type="hidden" id="edit_department_id" name="id">
+
+                <div class="pl-modal-body bg-slate-50">
+                    <div id="editModalAlert" class="alert alert-danger hidden mb-3 py-2 px-3 text-sm"></div>
+
+                    <div class="form-group-custom">
+                        <label for="edit_department_name">Department Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="edit_department_name" name="department_name" class="form-control-custom" required>
+                        <span class="error-msg hidden" id="error_edit_department_name"></span>
+                    </div>
+                </div>
+                <div class="pl-modal-footer">
+                    <button type="button" class="pl-btn pl-btn-neutral" data-close-modal="editDepartmentModal">Cancel</button>
+                    <button type="submit" class="pl-btn pl-btn-primary" id="btnSubmitEdit">
+                        <i class="fas fa-save mr-1.5"></i> Update Department
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @push('scripts')
-    <script>
-        window.reloadDepartmentsTable = function() {
-            if (window._departmentsTable) window._departmentsTable.ajax.reload(null, false);
-        }
+        <script>
+            $(document).ready(function() {
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
 
-        $(document).ready(function() {
-            window._departmentsTable = $('#departments-table').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: { url: '{{ route('marsho-departments.index') }}', type: 'GET' },
-                columns: [
-                    { data: 'department_name', name: 'department_name' },
-                    { data: 'actions', name: 'actions', orderable: false, searchable: false }
-                ],
-                order: [[0, 'desc']]
-            });
+                // Toast Helper
+                function showToast(icon, message) {
+                    Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    }).fire({
+                        icon: icon,
+                        title: message
+                    });
+                }
 
-            $(document).on('click', '.edit-btn', function() {
-                const detail = { id: $(this).data('id'), department_name: $(this).data('name') };
-                window.dispatchEvent(new CustomEvent('open-edit', { detail }));
-            });
+                // Modal Toggle Helper
+                function openModal(modalId) {
+                    $('#' + modalId).addClass('active').css('display', 'flex');
+                }
+                function closeModal(modalId) {
+                    $('#' + modalId).removeClass('active').css('display', 'none');
+                }
 
-            $(document).on('click', '.delete-btn', function() {
-                const id = $(this).data('id');
-                Swal.fire({ title: 'Are you sure?', text: 'This action cannot be undone!', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Yes, delete it!' }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(`/marsho-departments/${id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } }).then(response => {
-                            if (response.ok) {
-                                Swal.fire({ icon: 'success', title: 'Deleted', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
-                                window.reloadDepartmentsTable();
-                            } else {
-                                response.json().then(data => { Swal.fire('Error', data.message || 'Failed to delete the department.', 'error'); });
-                            }
-                        }).catch(err => { Swal.fire('Error', 'Network error', 'error'); });
+                $('[data-close-modal]').on('click', function() {
+                    const target = $(this).data('close-modal');
+                    closeModal(target);
+                });
+
+                $('.pl-modal-overlay').on('click', function(e) {
+                    if (e.target === this) {
+                        closeModal($(this).attr('id'));
                     }
                 });
+
+                $(document).on('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        $('.pl-modal-overlay.active').each(function() {
+                            closeModal($(this).attr('id'));
+                        });
+                    }
+                });
+
+                // Initialize DataTable with Yajra and SearchBuilder
+                const table = $('#departmentsTable').DataTable({
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '{{ route('marsho-departments.index') }}',
+                        type: 'GET'
+                    },
+                    dom: 'Qlfrtip',
+                    searchBuilder: {
+                        columns: [0, 1, 3]
+                    },
+                    columns: [
+                        { data: 'id', name: 'id', className: 'text-center font-semibold' },
+                        { data: 'department_name', name: 'department_name', className: 'font-semibold text-slate-800' },
+                        { data: 'users_count', name: 'users_count', className: 'text-center', searchable: false },
+                        { data: 'created_at_formatted', name: 'created_at' },
+                        { data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-center' }
+                    ],
+                    order: [[0, 'desc']],
+                    pageLength: 25,
+                    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                    drawCallback: function() {
+                        if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                            tooltipTriggerList.map(function(el) {
+                                return new bootstrap.Tooltip(el);
+                            });
+                        }
+                    }
+                });
+
+                // Open Create Modal
+                $('#openCreateModalBtn').on('click', function() {
+                    $('#createDepartmentForm')[0].reset();
+                    $('#createModalAlert').addClass('hidden').text('');
+                    openModal('createDepartmentModal');
+                    setTimeout(() => $('#create_department_name').focus(), 150);
+                });
+
+                // Create Form Submit via AJAX (No reload)
+                $('#createDepartmentForm').on('submit', function(e) {
+                    e.preventDefault();
+                    const $btn = $('#btnSubmitCreate');
+                    const originalText = $btn.html();
+                    $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...');
+                    $('#createModalAlert').addClass('hidden').text('');
+
+                    $.ajax({
+                        url: '{{ route('marsho-departments.store') }}',
+                        type: 'POST',
+                        data: $(this).serialize(),
+                        headers: { 'X-CSRF-TOKEN': csrfToken },
+                        success: function(res) {
+                            closeModal('createDepartmentModal');
+                            showToast('success', res.message || 'Department created successfully.');
+                            table.ajax.reload(null, false);
+                        },
+                        error: function(xhr) {
+                            const errorMsg = xhr.responseJSON?.message || 'Failed to create department. Please check your inputs.';
+                            $('#createModalAlert').removeClass('hidden').text(errorMsg);
+                        },
+                        complete: function() {
+                            $btn.prop('disabled', false).html(originalText);
+                        }
+                    });
+                });
+
+                // Open Edit Modal
+                $(document).on('click', '.edit-btn', function() {
+                    const id = $(this).data('id');
+                    const name = $(this).data('name');
+
+                    $('#edit_department_id').val(id);
+                    $('#edit_department_name').val(name);
+                    $('#editModalAlert').addClass('hidden').text('');
+
+                    openModal('editDepartmentModal');
+                    setTimeout(() => $('#edit_department_name').focus(), 150);
+                });
+
+                // Edit Form Submit via AJAX (No reload)
+                $('#editDepartmentForm').on('submit', function(e) {
+                    e.preventDefault();
+                    const deptId = $('#edit_department_id').val();
+                    const $btn = $('#btnSubmitEdit');
+                    const originalText = $btn.html();
+                    $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin mr-1"></i> Updating...');
+                    $('#editModalAlert').addClass('hidden').text('');
+
+                    $.ajax({
+                        url: `/marsho-departments/${deptId}`,
+                        type: 'PUT',
+                        data: $(this).serialize(),
+                        headers: { 'X-CSRF-TOKEN': csrfToken },
+                        success: function(res) {
+                            closeModal('editDepartmentModal');
+                            showToast('success', res.message || 'Department updated successfully.');
+                            table.ajax.reload(null, false);
+                        },
+                        error: function(xhr) {
+                            const errorMsg = xhr.responseJSON?.message || 'Failed to update department.';
+                            $('#editModalAlert').removeClass('hidden').text(errorMsg);
+                        },
+                        complete: function() {
+                            $btn.prop('disabled', false).html(originalText);
+                        }
+                    });
+                });
+
+                // Delete Confirmation with SweetAlert2
+                $(document).on('click', '.delete-btn', function() {
+                    const deptId = $(this).data('id');
+                    const deptName = $(this).data('name');
+
+                    Swal.fire({
+                        title: 'Delete Department?',
+                        text: `Are you sure you want to delete "${deptName}"? This action cannot be undone.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Yes, Delete',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                url: `/marsho-departments/${deptId}`,
+                                type: 'DELETE',
+                                headers: { 'X-CSRF-TOKEN': csrfToken },
+                                success: function(res) {
+                                    showToast('success', res.message || 'Department deleted successfully.');
+                                    table.ajax.reload(null, false);
+                                },
+                                error: function(xhr) {
+                                    const errorMsg = xhr.responseJSON?.message || 'Failed to delete department.';
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Action Denied',
+                                        text: errorMsg,
+                                        confirmButtonColor: '#3b82f6'
+                                    });
+                                }
+                            });
+                        }
+                    });
+                });
             });
-        });
-    </script>
+        </script>
     @endpush
 </x-app-layout>

@@ -35,7 +35,7 @@
 
     <div class="{{ $headerColor }} p-3 flex justify-between items-start">
         <div>
-            <span class="text-[10px] uppercase opacity-75 block tracking-wider">ID Job</span>
+            <span class="text-[10px] uppercase opacity-75 block tracking-wider">Job ID</span>
             <h3 class="font-bold text-lg leading-tight">{{ $job->id_job }}</h3>
         </div>
         <div class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
@@ -47,13 +47,13 @@
 
         <div class="grid grid-cols-2 gap-2">
             <div>
-                <span class="text-[10px] text-gray-400 block mb-0.5">From</span>
+                <span class="text-[10px] text-gray-400 block mb-0.5">Requester</span>
 
                 <p class="font-semibold text-gray-900 truncate" title="{{ $job->pengaju->name }}">
                     {{ $job->pengaju->name }}</p>
             </div>
             <div>
-                <span class="text-[10px] text-gray-400 block mb-0.5">To Department</span>
+                <span class="text-[10px] text-gray-400 block mb-0.5">Assigned Department</span>
 
                 <span
                     class="bg-yellow-200 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded-full truncate inline-block max-w-full">
@@ -64,12 +64,12 @@
 
         <div class="grid grid-cols-2 gap-2 border-t border-gray-200 pt-2 mt-2">
             <div>
-                <span class="text-[10px] text-gray-400 block mb-0.5">Start</span>
+                <span class="text-[10px] text-gray-400 block mb-0.5">Start Date</span>
                 <p class="font-medium text-gray-900">
                     {{ \Carbon\Carbon::parse($job->tanggal_job_mulai)->format('d M Y') }}</p>
             </div>
             <div>
-                <span class="text-[10px] text-gray-400 block mb-0.5 ">End (Deadline)</span>
+                <span class="text-[10px] text-gray-400 block mb-0.5 ">Deadline</span>
 
                 <p
                     class="font-medium{{ \Carbon\Carbon::parse($job->deadline)->isPast() && !in_array($job->status, ['completed', 'closed']) ? ' text-red-400' : ' text-gray-500' }}">
@@ -79,7 +79,7 @@
         </div>
 
         <div class="border-t border-gray-200 pt-2 mt-2">
-            <span class="text-[10px] text-gray-400 block mb-0.5">Processed by (Updated)</span>
+            <span class="text-[10px] text-gray-400 block mb-0.5">Updated By</span>
             <p class="font-medium text-gray-900 truncate">
                 {{ $latestRoute->creator->name ?? 'System' }}
                 <span class="text-xs text-gray-500 font-normal ml-1">at
@@ -88,7 +88,7 @@
         </div>
 
         <div class="border-t border-gray-200 pt-2 mt-2">
-            <span class="text-[10px] text-gray-400 block mb-0.5">Location</span>
+            <span class="text-[10px] text-gray-400 block mb-0.5">Area / Location</span>
             <p class="font-bold text-gray-900">{{ $job->area->name ?? '-' }}</p>
         </div>
 
