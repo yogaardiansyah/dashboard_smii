@@ -6,14 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <meta name="theme-color" content="#000000">
+
+    <meta name="turbolinks-visit-control" content="reload">
+
     {{-- <!-- PWA  -->
     <meta name="theme-color" content="#6777ef" />
     <link rel="apple-touch-icon" href="{{ asset('assets/images/sinarmeadow.png') }}">
 
     <link rel="manifest" href="{{ asset('/manifest.json') }}"> --}}
-    <link rel="icon" href="{{ url('assets/images/sinarmeadow.png') }}">
+    <link rel="icon" href="{{ url('assets/images/sinarmeadow.webp') }}">
 
-    <title>{{ 'INTRA Dashboard SMII' }} - @yield('title')</title>
+    <title>{{ 'Operational Dashboard SMII' }} - @yield('title')</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -21,11 +25,13 @@
     <!-- Vendors Style-->
     <link rel="stylesheet" href="{{ asset('assets') }}/src/css/vendors_css.css">
 
+    <link rel="stylesheet" href="{{ asset('assets') }}/src/css/font-awesome-6.4.css">
+
     <link rel="stylesheet" href="{{ asset('assets') }}/src/css/tailwind.min.css">
 
     <!-- Style-->
-    <link rel="stylesheet" href="{{ asset('assets') }}/src/css/horizontal-menu.css">
-    <link rel="stylesheet" href="{{ asset('assets') }}/src/css/style.css">
+    <link rel="stylesheet" href="{{ asset('assets') }}/src/css/horizontal-menu.css?v={{ filemtime(public_path('assets/src/css/horizontal-menu.css')) }}">
+    <link rel="stylesheet" href="{{ asset('assets') }}/src/css/style.css?v={{ filemtime(public_path('assets/src/css/style.css')) }}">
     <link rel="stylesheet" href="{{ asset('assets') }}/src/css/skin_color.css">
     <link rel="stylesheet" href="{{ asset('assets') }}/src/css/custom.css">
     <link rel="stylesheet" href="{{ asset('assets') }}/vendor_components/datatables/datatables.min.css">
@@ -40,8 +46,167 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/searchbuilder/1.7.1/css/searchBuilder.dataTables.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.2/css/dataTables.dateTime.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     @stack('css')
+
+    <style>
+        .turbolinks-progress-bar {
+            height: 3px;
+            background-color: #c0a01f;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0;
+            z-index: 9999;
+            transition: width 300ms ease-out, opacity 150ms 150ms ease-in;
+        }
+
+        /* Force SweetAlert (v1 & v2) to always be above any modals */
+        .swal2-container,
+        .sweet-overlay,
+        .sweet-alert {
+            z-index: 999999 !important;
+        }
+
+        /* Custom INTRA SMII Branded Preloader */
+        #loader {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #090e1a 0%, #0b1329 50%, #0f172a 100%);
+            overflow: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        #loader.loaded,
+        #loader[style*="display: none"],
+        #loader[style*="opacity: 0"] {
+            pointer-events: none !important;
+            visibility: hidden !important;
+        }
+
+
+        .custom-loader-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .loader-logo-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-spinner-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid rgba(192, 160, 31, 0.15);
+            border-top: 3px solid #c0a01f;
+            border-right: 3px solid #38bdf8;
+            animation: loaderSpin 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.2), 0 0 15px rgba(192, 160, 31, 0.2);
+        }
+
+        .loader-logo-img {
+            height: 54px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+            animation: logoPulse 2s ease-in-out infinite alternate;
+        }
+
+        .loader-brand-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #ffffff 0%, #fde047 50%, #c0a01f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            margin: 0;
+        }
+
+        .loader-progress-bar-wrap {
+            width: 140px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-progress-bar-line {
+            width: 40%;
+            height: 100%;
+            background: linear-gradient(90deg, #c0a01f 0%, #38bdf8 100%);
+            border-radius: 999px;
+            position: absolute;
+            left: -40%;
+            animation: progressSlide 1.5s ease-in-out infinite;
+        }
+
+        .loader-status-text {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.65);
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        @keyframes loaderSpin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes logoPulse {
+            0% {
+                transform: scale(0.95);
+                filter: drop-shadow(0 4px 10px rgba(192, 160, 31, 0.3));
+            }
+
+            100% {
+                transform: scale(1.05);
+                filter: drop-shadow(0 6px 20px rgba(56, 189, 248, 0.5));
+            }
+        }
+
+        @keyframes progressSlide {
+            0% {
+                left: -40%;
+                width: 30%;
+            }
+
+            50% {
+                width: 60%;
+            }
+
+            100% {
+                left: 100%;
+                width: 30%;
+            }
+        }
+    </style>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -50,13 +215,25 @@
 <body class="layout-top-nav light-skin theme-primary fixed-manu">
 
     <div class="wrapper">
-        <div id="loader"></div>
+        <div id="loader">
+            <div class="custom-loader-content">
+                <div class="loader-logo-wrapper">
+                    <div class="loader-spinner-ring"></div>
+                    <img src="{{ asset('assets/images/sinarmeadow.webp') }}" alt="Logo Intra SMII"
+                        class="loader-logo-img" onerror="this.src='{{ asset('sinarmeadow.png') }}'">
+                </div>
+                <h2 class="loader-brand-title">OPERATIONAL DASHBOARD SMII</h2>
+                <div class="loader-progress-bar-wrap">
+                    <div class="loader-progress-bar-line"></div>
+                </div>
+                <p class="loader-status-text">Memuat Portal Operational Dashboard SMII...</p>
+            </div>
+        </div>
         @include('layouts.partials.header')
 
         @include('layouts.partials.sidebar')
         <div class="content-wrapper">
             <div class="px-4 md:px-0">
-                @include('sweetalert::alert')
                 {{ $slot }}
             </div>
         </div>
@@ -69,7 +246,7 @@
 
 
 
-     <script type="text/javascript" src="{{ asset('assets') }}/ajax/libs/jQuery-slimScroll/1.3.8/jquery-3.7.1.min.js">
+    <script type="text/javascript" src="{{ asset('assets') }}/ajax/libs/jQuery-slimScroll/1.3.8/jquery-3.7.1.min.js">
     </script>
     <script type="text/javascript" src="{{ asset('assets') }}/ajax/libs/jQuery-slimScroll/1.3.8/jquery.slimscroll.min.js">
     </script>
@@ -78,7 +255,6 @@
     <script src="{{ asset('assets') }}/icons/feather-icons/feather.min.js"></script>
 
     <script src="{{ asset('assets') }}/src/js/tailwind.min.js"></script>
-    <script src="{{ asset('assets/datepicker/jquery-ui.min.js') }}"></script>
 
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
@@ -92,18 +268,19 @@
     <script src="{{ asset('assets') }}/vendor_components/raphael/raphael.min.js"></script>
     <script src="{{ asset('assets') }}/vendor_components/morris.js/morris.min.js"></script>
 
-
-    <!-- Warehouse App -->
-    <script src="{{ asset('assets') }}/src/js/demo.js"></script>
     <script src="{{ asset('assets') }}/src/js/jquery.smartmenus.js"></script>
     <script src="{{ asset('assets') }}/src/js/menus.js"></script>
     <script src="{{ asset('assets') }}/src/js/template.js"></script>
     <script src="{{ asset('assets') }}/src/js/pages/dashboard2.js"></script>
-    <script src="
-            https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.all.min.js
-            "></script>
+    <script src="{{ asset('assets') }}/vendor_components/jquery-steps-master/build/jquery.steps.js"></script>
+    <script src="{{ asset('assets') }}/vendor_components/jquery-validation-1.17.0/dist/jquery.validate.min.js"></script>
+    <script src="{{ asset('assets/src/js/pages/steps.js') }}?v=1.0.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.all.min.js"></script>
     <script src="{{ asset('assets') }}/vendor_components/sweetalert/sweetalert.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script src="{{ asset('assets') }}/src/js/pages/toastr.js"></script>
+    <script src="{{ asset('assets') }}/src/js/pages/notification.js"></script>
 
 
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.jqueryui.js"></script>
@@ -116,6 +293,48 @@
     <script src="https://cdn.datatables.net/searchbuilder/1.8.1/js/dataTables.searchBuilder.js"></script>
     <script src="https://cdn.datatables.net/searchbuilder/1.8.1/js/searchBuilder.dataTables.js"></script>
     <script src="https://cdn.datatables.net/datetime/1.5.4/js/dataTables.dateTime.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fullscreenBtn = document.getElementById('fullscreenButton');
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const icon = this.querySelector('i');
+
+                    if (!document.fullscreenElement) {
+                        // Masuk ke Mode Fullscreen
+                        document.documentElement.requestFullscreen().then(() => {
+                            if (icon) {
+                                icon.classList.remove('fa-expand');
+                                icon.classList.add('fa-compress');
+                            }
+                        }).catch(err => {
+                            console.error(`Gagal aktifkan fullscreen: ${err.message}`);
+                        });
+                    } else {
+                        // Keluar dari Mode Fullscreen
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen().then(() => {
+                                if (icon) {
+                                    icon.classList.remove('fa-compress');
+                                    icon.classList.add('fa-expand');
+                                }
+                            });
+                        }
+                    }
+                });
+                // Menangani kejadian saat pengguna menekan tombol ESC di keyboard
+                document.addEventListener('fullscreenchange', function() {
+                    const icon = fullscreenBtn.querySelector('i');
+                    if (!document.fullscreenElement && icon) {
+                        icon.classList.remove('fa-compress');
+                        icon.classList.add('fa-expand');
+                    }
+                });
+            }
+        });
+    </script>
     @stack('scripts')
 
 

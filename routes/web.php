@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardSalesController;
 use App\Http\Controllers\StandardBudgetController;
 use App\Http\Controllers\KanbanController;
+use App\Http\Controllers\HSE\SafetyBoardController;
 
 
 Route::get('/', function () {
