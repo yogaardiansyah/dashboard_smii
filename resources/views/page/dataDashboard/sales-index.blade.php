@@ -3,6 +3,8 @@
         Sales
     @endsection
 
+    @include('layouts.partials.vendor.datatables')
+
     <div class="content-header">
         <div class="flex items-center justify-between">
             <h4 class="page-title text-2xl font-medium"></h4>
@@ -63,10 +65,6 @@
     </section>
 
     @push('scripts')
-        <!-- DataTables Responsive JS -->
-        <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-        <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css"/>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var table = $('#tableSales').DataTable({

@@ -7,10 +7,10 @@
                 <!-- logo-->
                 <div class="logo-lg">
                     <span class="light-logo"><img
-                            src="{{ asset('assets/images/logoblack1.webp') }}?v={{ filemtime(public_path('assets/images/logoblack1.webp')) }}"
+                            src="{{ asset('assets/images/logoblack1.webp') }}?v={{ file_exists(public_path('assets/images/logoblack1.webp')) ? filemtime(public_path('assets/images/logoblack1.webp')) : time() }}"
                             width="250" alt="logo"></span>
                     <span class="dark-logo"><img
-                            src="{{ asset('assets/images/logoblack1.webp') }}?v={{ filemtime(public_path('assets/images/logoblack1.webp')) }}"
+                            src="{{ asset('assets/images/logoblack1.webp') }}?v={{ file_exists(public_path('assets/images/logoblack1.webp')) ? filemtime(public_path('assets/images/logoblack1.webp')) : time() }}"
                             width="250" alt="logo"></span>
                 </div>
             </a>
@@ -27,7 +27,7 @@
                 </label>
                 <!-- Mobile compact logo (shown only on mobile) -->
                 <a href="{{ route('dashboard') }}" class="mobile-header-logo">
-                    <img src="{{ asset('assets/images/logoblack1.webp') }}?v={{ filemtime(public_path('assets/images/logoblack1.webp')) }}"
+                    <img src="{{ asset('assets/images/logoblack1.webp') }}?v={{ file_exists(public_path('assets/images/logoblack1.webp')) ? filemtime(public_path('assets/images/logoblack1.webp')) : time() }}"
                         alt="logo" style="max-width:130px;height:auto;">
                 </a>
             </div>
@@ -482,24 +482,12 @@
                                         Department {{ $currentUser?->department?->department_name ?? '—' }}
                                     </p>
                                 </li>
-                                {{-- <li>
-                                    <a href="{{ route('locked') }}"
-                                        class="items-center m-0 text-base flex px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"><i
-                                            class="fa fa-lock me-3 text-xl" aria-hidden="true"> </i>
-                                        Lock Screen</a>
-                                </li> --}}
                                 <li>
                                     <a href="{{ route('profile.edit') }}"
                                         class="items-center m-0 text-base flex px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"><i
                                             class="fa fa-cog me-3 text-xl" aria-hidden="true"> </i>
                                         My Profile</a>
                                 </li>
-                                {{-- <li>
-                                    <a href="javascript:void(0)" onclick="openAutoLockSettings()"
-                                        class="items-center m-0 text-base flex px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"><i
-                                            class="fa fa-lock me-3 text-xl" aria-hidden="true"> </i>
-                                        Auto Lock Settings</a>
-                                </li> --}}
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <li>

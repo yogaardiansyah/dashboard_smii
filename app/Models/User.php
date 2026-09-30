@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\Marsho\MarshoUser;
 use App\Models\PCR\Initiator;
 use App\Models\PCR\PCC;
 use App\Models\QAD\Approver;
@@ -12,6 +13,7 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -57,42 +59,37 @@ class User extends Authenticatable
         return $this->belongsTo(Department::class);
     }
 
-    public function rqmMstr()
-    {
-        return $this->hasMany(RequisitionMaster::class);
-    }
-
-    public function approvers()
-    {
-        return $this->hasMany(Approver::class, 'rqa_apr', 'username');
-    }
-
-
-
-    /*
-    * PCR RELATIONS
-    */
-
     protected $connection = 'mysql';
-
-    public function pccs()
-    {
-        return $this->hasMany(PCC::class, 'user_id', 'id');
-    }
-
-    public function initiators()
-    {
-        return $this->hasMany(Initiator::class, 'user_id', 'id')->connection('mysql_pcr');
-    }
-
-    public function pcc()
-    {
-        return $this->setConnection('mysql_pcr')->belongsTo(PCC::class, 'user_id', 'id');
-    }
 
     public function getUsernameAttribute($value)
     {
         return strtolower($value);
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+
+        $path = 'user_avatars/' . $this->avatar;
+
+        return Storage::disk('public')->exists($path)
+            ? Storage::url('public/' . $path)
+            : null;
+    }
+
+    public function getBannerUrlAttribute()
+    {
+        if (!$this->banner) {
+            return null;
+        }
+
+        $path = 'user_banners/' . $this->banner;
+
+        return Storage::disk('public')->exists($path)
+            ? Storage::url('public/' . $path)
+            : null;
     }
 
 
@@ -130,5 +127,10 @@ class User extends Authenticatable
         // For simplicity, let's say any user in that department can approve.
         // Or, perhaps only department heads (e.g., user->is_department_head && user->department_id == $department->id)
         return $this->department_id === $department->id;
+    }
+
+    public function marshoProfile()
+    {
+        return $this->hasOne(MarshoUser::class, 'user_id');
     }
 }

@@ -2,77 +2,69 @@
     @section('title')
         List Roles
     @endsection
-    <div class="content-header">
-        <div class="flex items-center justify-between">
-            <h4 class="page-title text-3xl font-lg"></h4>
-            <div class="inline-flex items-center">
-                <nav>
-                    <ol class="breadcrumb flex items-center">
-                        <li class="breadcrumb-item pr-1"><a href="{{ route('dashboard') }}"><i
-                                    class="mdi mdi-home-outline"></i></a></li>
-                        <li class="breadcrumb-item pr-1" aria-current="page">Role</li>
-                        <li class="breadcrumb-item active" aria-current="page">List Role</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </div>
 
-    <section class="content">
-        <!-- Add Role Button -->
-        <div class="mb-4 flex justify-end">
-            <button type="button"
-                class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-base px-3 py-3 text-center me-2 mb-2 float-right"
-                data-modal-target="createRoleModal" data-modal-toggle="createRoleModal">
-                Add Role
-            </button>
-        </div>
-        <div class="card">
-            <div class="card-header">
-                <h1 class="card-title text-3xl font-medium">List Roles</h1>
+    @include('layouts.partials.vendor.datatables')
+
+    @push('css')
+        @include('layouts.partials.roleuser_styles')
+    @endpush
+    
+    <div class="pl-shell mt-4">
+        <div class="pl-hero">
+            <span class="pl-hero-kicker">Role Maintenance</span>
+            <div class="pl-hero-title">Role</div>
+            <p class="pl-hero-copy">Kelola hak peran kelompok (roles) pengguna untuk mendefinisikan pembagian kewenangan secara terstruktur.</p>
+            <div class="pl-toolbar">
+                <button type="button"
+                    class="pl-btn pl-btn-primary"
+                    id="openCreateModalBtn">
+                    <i class="fa-solid fa-plus mr-2"></i> Add Role
+                </button>
             </div>
-            <div class="card-body">
-                <div class="relative overflow-x-auto sm:rounded-lg">
-                    <table id="rolesTable" class="table table-striped w-full  text-left rtl:text-right table-bordered">
-                        <thead class="uppercase border-b">
+        </div>
+
+        <div class="pl-card">
+            <div class="pl-card-head">
+                <div class="pl-card-title">List Roles</div>
+                <div class="pl-card-copy">Menampilkan seluruh daftar peran (roles) terdaftar di sistem.</div>
+            </div>
+            <div class="pl-card-body">
+                <div class="pl-table-shell table-responsive">
+                    <table id="rolesTable" class="table table-bordered w-full">
+                        <thead>
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-xl">
-                                    #
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-xl">
-                                    Role Name
-                                </th>
-                                <th class="px-6 py-3 text-xl text-center">
-                                    Action
-                                </th>
+                                <th class="w-16 text-center">#</th>
+                                <th>Role Name</th>
+                                <th class="text-center w-52">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($roles as $role)
                                 <tr>
-                                    <td class="px-6 py-4 text-xl">
-                                        {{ $loop->iteration }}
-                                    </td>
-                                    <td class="px-6 py-4 text-xl">
-                                        {{ $role->name }}
-                                    </td>
-                                    <td class="flex items-center justify-center text-xl space-x-4">
-                                        <button type='button' data-modal-target="createRoleModal-{{ $role->id }}"
-                                            data-modal-toggle="createRoleModal-{{ $role->id }}"
-                                            class="text-fade btn btn-warning"><i
-                                                class="fa-solid fa-pencil text-white"></i>
-                                        </button>
-                                        <a href="{{ url('roles/' . $role->id . '/give-permissions') }}"
-                                            class="text-fade btn btn-info"><i class="fa-solid fa-key text-white"></i>
-                                        </a>
-                                        <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
-                                            class="delete-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-fade btn btn-danger">
-                                                <i class="fas fa-trash-alt text-white"></i>
+                                    <td class="text-center font-medium">{{ $loop->iteration }}</td>
+                                    <td class="font-medium">{{ $role->name }}</td>
+                                    <td class="text-center">
+                                        <div class="flex items-center justify-center space-x-3">
+                                            <button type='button'
+                                                data-id="{{ $role->id }}"
+                                                data-name="{{ $role->name }}"
+                                                class="edit-btn pl-btn pl-btn-neutral py-1.5 px-3 text-xs flex items-center">
+                                                <i class="fa-solid fa-pencil mr-1"></i> Edit
                                             </button>
-                                        </form>
+                                            <a href="{{ url('roles/' . $role->id . '/give-permissions') }}"
+                                                class="pl-btn pl-btn-neutral text-blue-600 py-1.5 px-3 text-xs flex items-center">
+                                                <i class="fa-solid fa-key mr-1"></i> Permissions
+                                            </a>
+                                            <form action="{{ route('roles.destroy', $role->id) }}" method="POST"
+                                                class="delete-form inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                    class="pl-btn pl-btn-neutral text-red-600 hover:bg-red-50 py-1.5 px-3 text-xs flex items-center">
+                                                    <i class="fas fa-trash-alt mr-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -81,166 +73,266 @@
                 </div>
             </div>
         </div>
-    </section>
-
-    @push('scripts')
-        <script>
-            $(document).ready(function() {
-                var table = $('#rolesTable').DataTable({
-                    "lengthChange": false,
-                    "pagingType": "simple_numbers",
-                    "dom": 'Bfrtip',
-                    "buttons": ['copy', 'csv', 'excel', 'pdf', 'print'],
-                    "drawCallback": function(settings) {
-                        // Function to reposition modal in the viewport
-                        function repositionModal(modalId) {
-                            var modal = $('#' + modalId);
-                            var modalDialog = modal.find('.modal-dialog');
-
-                            // Calculate top position based on viewport and scroll
-                            var modalTop = Math.max(0, ($(window).height() - modalDialog.outerHeight()) /
-                                2) + $(window).scrollTop();
-                            var modalLeft = Math.max(0, ($(window).width() - modalDialog.outerWidth()) / 2);
-
-                            modalDialog.css({
-                                'margin-top': modalTop,
-                                'margin-left': modalLeft
-                            });
-                        }
-
-                        // SweetAlert2 confirmation dialog for delete action
-                        $('.delete-form').off('submit').on('submit', function(e) {
-                            e.preventDefault(); // Prevent the form from submitting
-
-                            var form = this; // Store a reference to the form
-
-                            Swal.fire({
-                                title: 'Are you sure?',
-                                text: "You won't be able to revert this!",
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#d33',
-                                cancelButtonColor: '#3085d6',
-                                confirmButtonText: 'Yes, delete it!',
-                                cancelButtonText: 'Cancel'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    form.submit(); // Submit the form if confirmed
-                                }
-                            });
-                        });
-
-                        // Trigger reposition on modal show event
-                        $('[data-modal-toggle]').off('click').on('click', function() {
-                            var target = $(this).data('modal-target');
-                            $('#' + target).removeClass('hidden').addClass('flex').attr(
-                                'aria-modal', 'true').attr('role', 'dialog');
-                            repositionModal(target); // Reposition modal when shown
-                        });
-
-                        $('[data-modal-hide]').off('click').on('click', function() {
-                            var target = $(this).data('modal-hide');
-                            $('#' + target).addClass('hidden').removeClass('flex').removeAttr(
-                                'aria-modal').removeAttr('role');
-                        });
-                    }
-                });
-
-                @if (session()->has('success'))
-                    Swal.fire({
-                        icon: 'success',
-                        title: '{{ session()->get('success') }}',
-                        text: '{{ session()->get('message') }}',
-                    });
-                @endif
-            });
-        </script>
-    @endpush
+    </div>
 
     {{-- Modal Create --}}
-    <div id="createRoleModal" tabindex="-1" aria-hidden="true"
-        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative p-4 w-full max-w-md max-h-full">
-            <!-- Modal content -->
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                <!-- Modal header -->
-                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                    <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                        Add Role
-                    </h3>
-                    <button type="button"
-                        class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                        data-modal-hide="createRoleModal">
-                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewbox="0 0 14 14">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
-                        </svg>
-                        <span class="sr-only">Close modal</span>
-                    </button>
+    <div id="createRoleModal" class="pl-modal-overlay">
+        <div class="pl-modal-panel">
+            <div class="pl-modal-header">
+                <div>
+                    <span class="pl-hero-kicker" style="margin-bottom: 2px; color: rgba(255,255,255,0.6); font-size: 10px;">Maintenance</span>
+                    <h3 class="pl-modal-title">Create Role</h3>
                 </div>
-                <!-- Modal body -->
-                <div class="p-4 md:p-5">
-                    <form class="space-y-4" action="{{ route('roles.store') }}" method="POST">
-                        @csrf
-                        <div>
-                            <label for="name"
-                                class="block mb-2 text-xl font-medium text-gray-900 dark:text-white">Role Name</label>
-                            <input type="text" name="name" id="name"
-                                class="text-md bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                placeholder="Role Name" required="">
-                        </div>
-                        <button type="submit"
-                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Create</button>
-                    </form>
-                </div>
+                <button type="button" class="pl-modal-close" data-hide="createRoleModal">&times;</button>
             </div>
+            <form class="ajax-form" id="createRoleForm" action="{{ route('roles.store') }}" method="POST">
+                @csrf
+                <div class="pl-modal-body">
+                    <div class="form-group-custom">
+                        <label for="name">Role Name</label>
+                        <input type="text" name="name" id="name"
+                            class="form-control-custom"
+                            placeholder="e.g. administrator, editor, author" required="">
+                        <span class="error-msg hidden"></span>
+                    </div>
+                </div>
+                <div class="pl-modal-footer">
+                    <button type="button" class="pl-btn pl-btn-neutral" data-hide="createRoleModal">Cancel</button>
+                    <button type="submit" class="pl-btn pl-btn-primary">Create Role</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    {{-- Modal Edit --}}
-    @foreach ($roles as $role)
-        <div id="createRoleModal-{{ $role->id }}" tabindex="-1" aria-hidden="true"
-            class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <div class="relative p-4 w-full max-w-md max-h-full">
-                <!-- Modal content -->
-                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                    <!-- Modal header -->
-                    <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                        <h3 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                            Edit Role
-                        </h3>
-                        <button type="button"
-                            class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                            data-modal-hide="createRoleModal-{{ $role->id }}">
-                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewbox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
-                            </svg>
-                            <span class="sr-only">Close modal</span>
-                        </button>
-                    </div>
-                    <!-- Modal body -->
-                    <div class="p-4 md:p-5">
-                        <form class="space-y-4" action="{{ route('roles.update', ['role' => $role->id]) }}"
-                            method="POST">
-                            @csrf
-                            @method('PUT')
-                            <div>
-                                <label for="name"
-                                    class="block mb-2 text-xl font-medium text-gray-900 dark:text-white">Role
-                                    Name</label>
-                                <input type="text" name="name" id="name"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white text-md"
-                                    placeholder="Role Name" required="" value="{{ $role->name }}">
-                            </div>
-                            <button type="submit"
-                                class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Edit</button>
-                        </form>
+    {{-- Modal Edit (Single Shared Modal) --}}
+    <div id="editRoleModal" class="pl-modal-overlay">
+        <div class="pl-modal-panel">
+            <div class="pl-modal-header">
+                <div>
+                    <span class="pl-hero-kicker" style="margin-bottom: 2px; color: rgba(255,255,255,0.6); font-size: 10px;">Maintenance</span>
+                    <h3 class="pl-modal-title">Edit Role</h3>
+                </div>
+                <button type="button" class="pl-modal-close" data-hide="editRoleModal">&times;</button>
+            </div>
+            <form class="ajax-form" id="editRoleForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="pl-modal-body">
+                    <div class="form-group-custom">
+                        <label for="edit_name">Role Name</label>
+                        <input type="text" name="name" id="edit_name"
+                            class="form-control-custom" required="">
+                        <span class="error-msg hidden"></span>
                     </div>
                 </div>
-            </div>
+                <div class="pl-modal-footer">
+                    <button type="button" class="pl-btn pl-btn-neutral" data-hide="editRoleModal">Cancel</button>
+                    <button type="submit" class="pl-btn pl-btn-primary" style="background: #eab308; color: #fff !important;">Save Changes</button>
+                </div>
+            </form>
         </div>
-    @endforeach
+    </div>
+
+    @push('scripts')
+    <script>
+        $(document).ready(function() {
+            var table = $('#rolesTable').DataTable({
+                "lengthChange": false,
+                "pagingType": "simple_numbers",
+                "dom": 'Bfrtip',
+                "buttons": ['copy', 'csv', 'excel', 'pdf', 'print']
+            });
+
+            // Open Create modal
+            $('#openCreateModalBtn').on('click', function() {
+                $('#createRoleForm')[0].reset();
+                $('#createRoleForm').find('.error-msg').addClass('hidden').text('');
+                $('#createRoleForm').find('input').removeClass('border-error');
+                $('#createRoleModal').css('display', 'flex');
+            });
+
+            // Handle edit button click
+            $(document).on('click', '.edit-btn', function() {
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+
+                // Clear formatting
+                $('#editRoleForm').find('.error-msg').addClass('hidden').text('');
+                $('#editRoleForm').find('input').removeClass('border-error');
+
+                // Populate fields
+                $('#edit_name').val(name);
+                $('#editRoleForm').attr('action', '/roles/' + id);
+                $('#editRoleForm').data('row', $(this).closest('tr'));
+
+                // Open modal
+                $('#editRoleModal').css('display', 'flex');
+            });
+
+            // Close modal events
+            $(document).on('click', '[data-hide]', function() {
+                var target = $(this).data('hide');
+                $('#' + target).css('display', 'none');
+            });
+
+            // AJAX Form Submit (Store & Update)
+            $(document).on('submit', '.ajax-form', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var url = form.attr('action');
+                var method = form.find('input[name="_method"]').val() || form.attr('method');
+                var data = form.serialize();
+
+                form.find('.error-msg').addClass('hidden').text('');
+                form.find('input').removeClass('border-error');
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: data,
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+
+                            // Close modal
+                            form.closest('.pl-modal-overlay').css('display', 'none');
+                            form[0].reset();
+
+                            if (form.attr('id') === 'createRoleForm') {
+                                // Add row to datatable
+                                var newRowIndex = table.rows().count() + 1;
+                                var actionHtml = `
+                                    <div class="flex items-center justify-center space-x-3">
+                                        <button type="button"
+                                            data-id="${response.data.id}"
+                                            data-name="${response.data.name}"
+                                            class="edit-btn pl-btn pl-btn-neutral py-1.5 px-3 text-xs flex items-center">
+                                            <i class="fa-solid fa-pencil mr-1"></i> Edit
+                                        </button>
+                                        <a href="/roles/${response.data.id}/give-permissions"
+                                            class="pl-btn pl-btn-neutral text-blue-600 py-1.5 px-3 text-xs flex items-center">
+                                            <i class="fa-solid fa-key mr-1"></i> Permissions
+                                        </a>
+                                        <form action="/roles/${response.data.id}" method="POST" class="delete-form inline">
+                                            <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="pl-btn pl-btn-neutral text-red-600 hover:bg-red-50 py-1.5 px-3 text-xs flex items-center">
+                                                <i class="fas fa-trash-alt mr-1"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                `;
+
+                                var node = table.row.add([
+                                    newRowIndex,
+                                    response.data.name,
+                                    actionHtml
+                                ]).draw(false).node();
+
+                                $(node).find('td:eq(0)').addClass('text-center font-medium');
+                                $(node).find('td:eq(1)').addClass('font-medium');
+                                $(node).find('td:eq(2)').addClass('text-center');
+                            } else {
+                                // Update row in datatable
+                                var tr = form.data('row');
+                                var rowData = table.row(tr).data();
+                                
+                                rowData[1] = response.data.name;
+                                
+                                var actionHtml = `
+                                    <div class="flex items-center justify-center space-x-3">
+                                        <button type="button"
+                                            data-id="${response.data.id}"
+                                            data-name="${response.data.name}"
+                                            class="edit-btn pl-btn pl-btn-neutral py-1.5 px-3 text-xs flex items-center">
+                                            <i class="fa-solid fa-pencil mr-1"></i> Edit
+                                        </button>
+                                        <a href="/roles/${response.data.id}/give-permissions"
+                                            class="pl-btn pl-btn-neutral text-blue-600 py-1.5 px-3 text-xs flex items-center">
+                                            <i class="fa-solid fa-key mr-1"></i> Permissions
+                                        </a>
+                                        <form action="/roles/${response.data.id}" method="POST" class="delete-form inline">
+                                            <input type="hidden" name="_token" value="${$('meta[name="csrf-token"]').attr('content')}">
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <button type="submit" class="pl-btn pl-btn-neutral text-red-600 hover:bg-red-50 py-1.5 px-3 text-xs flex items-center">
+                                                <i class="fas fa-trash-alt mr-1"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                `;
+                                rowData[2] = actionHtml;
+                                
+                                table.row(tr).data(rowData).draw(false);
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 422) {
+                            var errors = xhr.responseJSON.errors;
+                            $.each(errors, function(key, val) {
+                                var input = form.find('[name="' + key + '"]');
+                                input.addClass('border-error');
+                                input.siblings('.error-msg').removeClass('hidden').text(val[0]);
+                            });
+                        } else {
+                            Swal.fire('Error', 'Terjadi kesalahan pada server.', 'error');
+                        }
+                    }
+                });
+            });
+
+            // AJAX Delete Form Submit
+            $(document).on('submit', '.delete-form', function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var tr = form.closest('tr');
+                var url = form.attr('action');
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data yang dihapus tidak bisa dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#3b82f6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: form.serialize(),
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Deleted!',
+                                        text: response.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+
+                                    // Remove from Datatable
+                                    table.row(tr).remove().draw(false);
+                                }
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error', 'Gagal menghapus data.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+    @endpush
 </x-app-layout>

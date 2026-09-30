@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SalesTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -11,73 +12,138 @@ use Carbon\CarbonPeriod;
 class DashboardSalesController extends Controller
 {
     protected $countryMapping = [
-        "TAIWAN" => "Taiwan", "PHILLIPPINES" => "Philippines", "MALAYSIA" => "Malaysia",
-        "MYANMAR" => "Myanmar", "EXPORT AUSTRALIA" => "Australia", "SRILANKA" => "Sri Lanka",
-        "UNI ARAB EMIRATES" => "United Arab Emirates", "HONGKONG" => "Hong Kong",
-        "PEOPLE'S REPUBLIC OF CHINA" => "China", "BRAZIL" => "Brazil",
-        "UNITED STATES OF AMERICA" => "United States", "GERMANY" => "Germany",
-        "INDIA" => "India", "CANADA" => "Canada", "SOUTH AFRICA" => "South Africa",
-        "NEPAL" => "Nepal", "FIJI" => "Fiji", "RUSSIAN FEDERATION" => "Russia",
-        "NORTH KOREA" => "North Korea", "SOUTH KOREA" => "South Korea"
-        // "IN  NESIA" => "Indonesia" // Usually handled by super-regions or direct 'INDONESIA' code_cmmt
+        "TAIWAN" => "Taiwan",
+        "PHILLIPPINES" => "Philippines",
+        "MALAYSIA" => "Malaysia",
+        "MYANMAR" => "Burma",
+        "EXPORT AUSTRALIA" => "Australia",
+        "EXPORT AUSTRALIA" => "New Zealand",
+        "SRILANKA" => "Sri Lanka",
+        "UNI ARAB EMIRATES" => "United Arab Emirates",
+        "HONGKONG" => "Hong Kong",
+        "PEOPLE'S REPUBLIC OF CHINA" => "China",
+        "BRAZIL" => "Brazil",
+        "UNITED STATES OF AMERICA" => "United States",
+        "GERMANY" => "Germany",
+        "INDIA" => "India",
+        "CANADA" => "Canada",
+        "SOUTH AFRICA" => "South Africa",
+        "NEPAL" => "Nepal",
+        "FIJI" => "Fiji",
+        "RUSSIAN FEDERATION" => "Russia",
+        "NORTH KOREA" => "Korea, North",
+        "SOUTH KOREA" => "Korea, South",
+        "KAMBOJA" => "Cambodia",
+        "VIETNAM" => "Vietnam",
+        "THAILAND" => "Thailand",
+        'AUSTRALIA' => 'Australia ', // Special case for Australia/New Zealand
+
+        // "INDONESIA" => "Indonesia" // Usually handled by super-regions or direct 'INDONESIA' code_cmmt
     ];
 
     protected $indonesiaSuperRegionKeys = [
-        "REGION1A", "REGION1B", "REGION1C", "REGION1D", "REGION2A", "REGION2B", "REGION2C", "REGION2D",
-        "REGION3A", "REGION3B", "REGION3C", "REGION4A", "REGION4B", "KEYACCOUNT", "COMMERCIAL"
+        "REGION1A",
+        "REGION1B",
+        "REGION1C",
+        "REGION1D",
+        "REGION2A",
+        "REGION2B",
+        "REGION2C",
+        "REGION2D",
+        "REGION3A",
+        "REGION3B",
+        "REGION3C",
+        "REGION4A",
+        "REGION4B",
+        "KEYACCOUNT",
+        "COMMERCIAL"
     ];
 
     protected $rawCodeCmmtToSuperRegionKeyMap; // Populated in __construct
 
-     protected $indonesiaCityData = [
-        "Tangerang Selatan" => ['lat' => -6.2887, 'lng' => 106.7194, 'db_key' => "TANGERANG SELATAN"], "Bali" => ['lat' => -8.3405, 'lng' => 115.0919, 'db_key' => "BALI"],
-        "Denpasar" => ['lat' => -8.6705, 'lng' => 115.2126, 'db_key' => "DENPASAR"], "Bogor" => ['lat' => -6.5950, 'lng' => 106.8060, 'db_key' => "BOGOR"],
-        "Semarang" => ['lat' => -6.9667, 'lng' => 110.4381, 'db_key' => "SEMARANG"], "Jakarta" => ['lat' => -6.2088, 'lng' => 106.8456, 'db_key' => "JAKARTA"],
-        "Jakarta Pusat" => ['lat' => -6.1751, 'lng' => 106.8272, 'db_key' => "JAKARTA PUSAT"], "Jakarta Utara" => ['lat' => -6.1384, 'lng' => 106.8639, 'db_key' => "JAKARTA UTARA"],
-        "Jakarta Barat" => ['lat' => -6.1676, 'lng' => 106.7663, 'db_key' => "JAKARTA BARAT"], "Jakarta Selatan" => ['lat' => -6.2615, 'lng' => 106.8106, 'db_key' => "JAKARTA SELATAN"],
-        "Adm. Jakarta Selatan" => ['lat' => -6.2615, 'lng' => 106.8106, 'db_key' => "ADM. JAKARTA SELATAN"], "Jakarta Timur" => ['lat' => -6.2259, 'lng' => 106.9004, 'db_key' => "JAKARTA TIMUR"],
-        "Bekasi" => ['lat' => -6.2383, 'lng' => 106.9756, 'db_key' => "BEKASI"], "Bekas" => ['lat' => -6.2383, 'lng' => 106.9756, 'db_key' => "BEKAS"], // Alias
-        "Serang" => ['lat' => -6.1181, 'lng' => 106.1558, 'db_key' => "SERANG"], "Surabaya" => ['lat' => -7.2575, 'lng' => 112.7521, 'db_key' => "SURABAYA"],
-        "Bandung" => ['lat' => -6.9175, 'lng' => 107.6191, 'db_key' => "BANDUNG"], "Medan" => ['lat' => 3.5952, 'lng' => 98.6722, 'db_key' => "MEDAN"],
-        "Palembang" => ['lat' => -2.9761, 'lng' => 104.7754, 'db_key' => "PALEMBANG"], "Makassar" => ['lat' => -5.1477, 'lng' => 119.4327, 'db_key' => "MAKASSAR"],
-        "Yogyakarta" => ['lat' => -7.7956, 'lng' => 110.3695, 'db_key' => "YOGYAKARTA"], "D.I.Yogyakarta" => ['lat' => -7.7956, 'lng' => 110.3695, 'db_key' => "D.I.YOGYAKARTA"], // Alias
+    protected $indonesiaCityData = [
+        "Tangerang Selatan" => ['lat' => -6.2887, 'lng' => 106.7194, 'db_key' => "TANGERANG SELATAN"],
+        "Bali" => ['lat' => -8.3405, 'lng' => 115.0919, 'db_key' => "BALI"],
+        "Denpasar" => ['lat' => -8.6705, 'lng' => 115.2126, 'db_key' => "DENPASAR"],
+        "Bogor" => ['lat' => -6.5950, 'lng' => 106.8060, 'db_key' => "BOGOR"],
+        "Semarang" => ['lat' => -6.9667, 'lng' => 110.4381, 'db_key' => "SEMARANG"],
+        "Jakarta" => ['lat' => -6.2088, 'lng' => 106.8456, 'db_key' => "JAKARTA"],
+        "Jakarta Pusat" => ['lat' => -6.1751, 'lng' => 106.8272, 'db_key' => "JAKARTA PUSAT"],
+        "Jakarta Utara" => ['lat' => -6.1384, 'lng' => 106.8639, 'db_key' => "JAKARTA UTARA"],
+        "Jakarta Barat" => ['lat' => -6.1676, 'lng' => 106.7663, 'db_key' => "JAKARTA BARAT"],
+        "Jakarta Selatan" => ['lat' => -6.2615, 'lng' => 106.8106, 'db_key' => "JAKARTA SELATAN"],
+        "Adm. Jakarta Selatan" => ['lat' => -6.2615, 'lng' => 106.8106, 'db_key' => "ADM. JAKARTA SELATAN"],
+        "Jakarta Timur" => ['lat' => -6.2259, 'lng' => 106.9004, 'db_key' => "JAKARTA TIMUR"],
+        "Bekasi" => ['lat' => -6.2383, 'lng' => 106.9756, 'db_key' => "BEKASI"],
+        "Bekas" => ['lat' => -6.2383, 'lng' => 106.9756, 'db_key' => "BEKAS"], // Alias
+        "Serang" => ['lat' => -6.1181, 'lng' => 106.1558, 'db_key' => "SERANG"],
+        "Surabaya" => ['lat' => -7.2575, 'lng' => 112.7521, 'db_key' => "SURABAYA"],
+        "Bandung" => ['lat' => -6.9175, 'lng' => 107.6191, 'db_key' => "BANDUNG"],
+        "Medan" => ['lat' => 3.5952, 'lng' => 98.6722, 'db_key' => "MEDAN"],
+        "Palembang" => ['lat' => -2.9761, 'lng' => 104.7754, 'db_key' => "PALEMBANG"],
+        "Makassar" => ['lat' => -5.1477, 'lng' => 119.4327, 'db_key' => "MAKASSAR"],
+        "Yogyakarta" => ['lat' => -7.7956, 'lng' => 110.3695, 'db_key' => "YOGYAKARTA"],
+        "D.I.Yogyakarta" => ['lat' => -7.7956, 'lng' => 110.3695, 'db_key' => "D.I.YOGYAKARTA"], // Alias
         "DI Yogyakarta" => ['lat' => -7.7956, 'lng' => 110.3695, 'db_key' => "DI YOGYAKARTA"], // Alias
         "Sleman" => ['lat' => -7.7186, 'lng' => 110.3803, 'db_key' => "SLEMAN"],
-        "Tangerang" => ['lat' => -6.1783, 'lng' => 106.6319, 'db_key' => "TANGERANG"], "Depok" => ['lat' => -6.4025, 'lng' => 106.7942, 'db_key' => "DEPOK"],
-        "Cirebon" => ['lat' => -6.7066, 'lng' => 108.5570, 'db_key' => "CIREBON"], "Malang" => ['lat' => -7.9666, 'lng' => 112.6326, 'db_key' => "MALANG"],
-        "Jember" => ['lat' => -8.1690, 'lng' => 113.7000, 'db_key' => "JEMBER"], "Kudus" => ['lat' => -6.8063, 'lng' => 110.8421, 'db_key' => "KUDUS"],
-        "Pekanbaru" => ['lat' => 0.5071, 'lng' => 101.4478, 'db_key' => "PEKAN BARU"], "Balikpapan" => ['lat' => -1.2379, 'lng' => 116.8529, 'db_key' => "BALIKPAPAN"],
+        "Tangerang" => ['lat' => -6.1783, 'lng' => 106.6319, 'db_key' => "TANGERANG"],
+        "Depok" => ['lat' => -6.4025, 'lng' => 106.7942, 'db_key' => "DEPOK"],
+        "Cirebon" => ['lat' => -6.7066, 'lng' => 108.5570, 'db_key' => "CIREBON"],
+        "Malang" => ['lat' => -7.9666, 'lng' => 112.6326, 'db_key' => "MALANG"],
+        "Jember" => ['lat' => -8.1690, 'lng' => 113.7000, 'db_key' => "JEMBER"],
+        "Kudus" => ['lat' => -6.8063, 'lng' => 110.8421, 'db_key' => "KUDUS"],
+        "Pekanbaru" => ['lat' => 0.5071, 'lng' => 101.4478, 'db_key' => "PEKAN BARU"],
+        "Balikpapan" => ['lat' => -1.2379, 'lng' => 116.8529, 'db_key' => "BALIKPAPAN"],
         "Banjarmasin" => ['lat' => -3.3167, 'lng' => 114.5900, 'db_key' => "BANJARMASIN"],
         "Pontianak" => ['lat' => -0.0277, 'lng' => 109.3425, 'db_key' => "PONTIANAK"],
         "Kalimantan Barat" => ['lat' => -0.0277, 'lng' => 109.3425, 'db_key' => "KALIMANTAN BARAT"],
         "Padang" => ['lat' => -0.9471, 'lng' => 100.3616, 'db_key' => "PADANG"],
-        "DKI Jakarta" => ['lat' => -6.2088, 'lng' => 106.8456, 'db_key' => "DKI JAKARTA"], "DKI Jakarta Raya" => ['lat' => -6.2088, 'lng' => 106.8456, 'db_key' => "DKI JAKARTA RAYA"],
-        "Pasuruan" => ['lat' => -7.6455, 'lng' => 112.9075, 'db_key' => "PASURUAN"], "Pangkalpinang" => ['lat' => -2.1303, 'lng' => 106.1098, 'db_key' => "PANGKALPINANG"],
-        "Bojonegoro" => ['lat' => -7.1566, 'lng' => 111.8886, 'db_key' => "BOJONEGORO"], "Sidoarjo" => ['lat' => -7.4478, 'lng' => 112.7183, 'db_key' => "SIDOARJO"],
-        "Tulung Agung" => ['lat' => -8.0652, 'lng' => 111.9010, 'db_key' => "TULUNG AGUNG"], "Gorontalo" => ['lat' => 0.5400, 'lng' => 123.0640, 'db_key' => "GORONTALO"],
-        "Palu" => ['lat' => -0.8977, 'lng' => 119.8657, 'db_key' => "PALU"], "Batam" => ['lat' => 1.0456, 'lng' => 104.0305, 'db_key' => "BATAM"],
-        "Jambi" => ['lat' => -1.6102, 'lng' => 103.6131, 'db_key' => "JAMBI"], "Cikarang" => ['lat' => -6.3160, 'lng' => 107.1463, 'db_key' => "CIKARANG"],
+        "DKI Jakarta" => ['lat' => -6.2088, 'lng' => 106.8456, 'db_key' => "DKI JAKARTA"],
+        "DKI Jakarta Raya" => ['lat' => -6.2088, 'lng' => 106.8456, 'db_key' => "DKI JAKARTA RAYA"],
+        "Pasuruan" => ['lat' => -7.6455, 'lng' => 112.9075, 'db_key' => "PASURUAN"],
+        "Pangkalpinang" => ['lat' => -2.1303, 'lng' => 106.1098, 'db_key' => "PANGKALPINANG"],
+        "Bojonegoro" => ['lat' => -7.1566, 'lng' => 111.8886, 'db_key' => "BOJONEGORO"],
+        "Sidoarjo" => ['lat' => -7.4478, 'lng' => 112.7183, 'db_key' => "SIDOARJO"],
+        "Tulung Agung" => ['lat' => -8.0652, 'lng' => 111.9010, 'db_key' => "TULUNG AGUNG"],
+        "Gorontalo" => ['lat' => 0.5400, 'lng' => 123.0640, 'db_key' => "GORONTALO"],
+        "Palu" => ['lat' => -0.8977, 'lng' => 119.8657, 'db_key' => "PALU"],
+        "Batam" => ['lat' => 1.0456, 'lng' => 104.0305, 'db_key' => "BATAM"],
+        "Jambi" => ['lat' => -1.6102, 'lng' => 103.6131, 'db_key' => "JAMBI"],
+        "Cikarang" => ['lat' => -6.3160, 'lng' => 107.1463, 'db_key' => "CIKARANG"],
         "Banten" => ['lat' => -6.4240, 'lng' => 106.1231, 'db_key' => "BANTEN"],
         "Samarinda" => ['lat' => -0.5021, 'lng' => 117.1537, 'db_key' => "SAMARINDA"],
         "Aceh" => ['lat' => 4.6951, 'lng' => 96.7494, 'db_key' => "ACEH"],
         "Banda Aceh" => ['lat' => 5.5483, 'lng' => 95.3238, 'db_key' => "BANDA ACEH"],
-        "Kendari" => ['lat' => -3.9955, 'lng' => 122.5148, 'db_key' => "KENDARI"], "Pamekasan" => ['lat' => -7.1600, 'lng' => 113.4783, 'db_key' => "PAMEKASAN"],
-        "Karawang" => ['lat' => -6.3025, 'lng' => 107.3060, 'db_key' => "KARAWANG"], "Penjaringan" => ['lat' => -6.1180, 'lng' => 106.7924, 'db_key' => "PENJARINGAN"],
-        "Ternate" => ['lat' => 0.7896, 'lng' => 127.3748, 'db_key' => "TERNATE"], "Kupang" => ['lat' => -10.1778, 'lng' => 123.5976, 'db_key' => "KUPANG"],
-        "Gresik" => ['lat' => -7.1646, 'lng' => 112.6508, 'db_key' => "GRESIK"], "Manado" => ['lat' => 1.4748, 'lng' => 124.8421, 'db_key' => "MANADO"],
-        "Muara Bungo" => ['lat' => -1.4869, 'lng' => 102.1130, 'db_key' => "MUARA BUNGO"], "Sukajaya" => ['lat' => -6.5740, 'lng' => 106.5080, 'db_key' => "SUKAJAYA"],
-        "Alok" => ['lat' => -8.6655, 'lng' => 122.2163, 'db_key' => "ALOK"], "Mataram" => ['lat' => -8.5833, 'lng' => 116.1167, 'db_key' => "MATARAM"],
-        "Sukabumi" => ['lat' => -6.9222, 'lng' => 106.9256, 'db_key' => "SUKABUMI"], "Tarakan" => ['lat' => 3.3208, 'lng' => 117.5888, 'db_key' => "TARAKAN"],
-        "Duri" => ['lat' => 1.2318, 'lng' => 101.2052, 'db_key' => "DURI"], "Kediri" => ['lat' => -7.8200, 'lng' => 112.0170, 'db_key' => "KEDIRI"],
-        "Probolinggo" => ['lat' => -7.7466, 'lng' => 113.2168, 'db_key' => "PROBOLINGGO"], "Jayapura" => ['lat' => -2.5333, 'lng' => 140.7167, 'db_key' => "JAYAPURA"],
-        "Baubau" => ['lat' => -5.4685, 'lng' => 122.6031, 'db_key' => "BAUBAU"], "Ambon" => ['lat' => -3.6554, 'lng' => 128.1908, 'db_key' => "AMBON"],
+        "Kendari" => ['lat' => -3.9955, 'lng' => 122.5148, 'db_key' => "KENDARI"],
+        "Pamekasan" => ['lat' => -7.1600, 'lng' => 113.4783, 'db_key' => "PAMEKASAN"],
+        "Karawang" => ['lat' => -6.3025, 'lng' => 107.3060, 'db_key' => "KARAWANG"],
+        "Penjaringan" => ['lat' => -6.1180, 'lng' => 106.7924, 'db_key' => "PENJARINGAN"],
+        "Ternate" => ['lat' => 0.7896, 'lng' => 127.3748, 'db_key' => "TERNATE"],
+        "Kupang" => ['lat' => -10.1778, 'lng' => 123.5976, 'db_key' => "KUPANG"],
+        "Gresik" => ['lat' => -7.1646, 'lng' => 112.6508, 'db_key' => "GRESIK"],
+        "Manado" => ['lat' => 1.4748, 'lng' => 124.8421, 'db_key' => "MANADO"],
+        "Muara Bungo" => ['lat' => -1.4869, 'lng' => 102.1130, 'db_key' => "MUARA BUNGO"],
+        "Sukajaya" => ['lat' => -6.5740, 'lng' => 106.5080, 'db_key' => "SUKAJAYA"],
+        "Alok" => ['lat' => -8.6655, 'lng' => 122.2163, 'db_key' => "ALOK"],
+        "Mataram" => ['lat' => -8.5833, 'lng' => 116.1167, 'db_key' => "MATARAM"],
+        "Sukabumi" => ['lat' => -6.9222, 'lng' => 106.9256, 'db_key' => "SUKABUMI"],
+        "Tarakan" => ['lat' => 3.3208, 'lng' => 117.5888, 'db_key' => "TARAKAN"],
+        "Duri" => ['lat' => 1.2318, 'lng' => 101.2052, 'db_key' => "DURI"],
+        "Kediri" => ['lat' => -7.8200, 'lng' => 112.0170, 'db_key' => "KEDIRI"],
+        "Probolinggo" => ['lat' => -7.7466, 'lng' => 113.2168, 'db_key' => "PROBOLINGGO"],
+        "Jayapura" => ['lat' => -2.5333, 'lng' => 140.7167, 'db_key' => "JAYAPURA"],
+        "Baubau" => ['lat' => -5.4685, 'lng' => 122.6031, 'db_key' => "BAUBAU"],
+        "Ambon" => ['lat' => -3.6554, 'lng' => 128.1908, 'db_key' => "AMBON"],
         "Sorong" => ['lat' => -0.8827, 'lng' => 131.2596, 'db_key' => "SORONG"],
         "Papua Barat" => ['lat' => -1.3361, 'lng' => 133.1740, 'db_key' => "PAPUA BARAT"],
         "Manokwari Papua" => ['lat' => -0.8626, 'lng' => 134.0550, 'db_key' => "MANOKWARI PAPUA"],
         "Subang" => ['lat' => -6.5700, 'lng' => 107.7630, 'db_key' => "SUBANG"],
-        "Deli Serdang" => ['lat' => 3.4191, 'lng' => 98.8131, 'db_key' => "DELI SERDANG"], "Tebing Tinggi" => ['lat' => 3.3316, 'lng' => 99.1621, 'db_key' => "TEBING TINGGI"],
-        "Kaban Jahe Karo" => ['lat' => 3.1000, 'lng' => 98.4833, 'db_key' => "KABAN JAHE KARO"], "Garut" => ['lat' => -7.2000, 'lng' => 107.9000, 'db_key' => "GARUT"],
-        "Kuningan" => ['lat' => -6.9760, 'lng' => 108.4850, 'db_key' => "KUNINGAN"], "Bintan" => ['lat' => 1.0795, 'lng' => 104.4360, 'db_key' => "BINTAN"],
+        "Deli Serdang" => ['lat' => 3.4191, 'lng' => 98.8131, 'db_key' => "DELI SERDANG"],
+        "Tebing Tinggi" => ['lat' => 3.3316, 'lng' => 99.1621, 'db_key' => "TEBING TINGGI"],
+        "Kaban Jahe Karo" => ['lat' => 3.1000, 'lng' => 98.4833, 'db_key' => "KABAN JAHE KARO"],
+        "Garut" => ['lat' => -7.2000, 'lng' => 107.9000, 'db_key' => "GARUT"],
+        "Kuningan" => ['lat' => -6.9760, 'lng' => 108.4850, 'db_key' => "KUNINGAN"],
+        "Bintan" => ['lat' => 1.0795, 'lng' => 104.4360, 'db_key' => "BINTAN"],
         "Kotawaringin" => ['lat' => -2.5300, 'lng' => 111.6300, 'db_key' => "KOTAWARINGIN"],
         "Lampung" => ['lat' => -4.5586, 'lng' => 105.4068, 'db_key' => "LAMPUNG"],
         "Madura" => ['lat' => -7.0833, 'lng' => 113.2833, 'db_key' => "MADURA"],
@@ -122,7 +188,7 @@ class DashboardSalesController extends Controller
 
     protected function getCitiesForSuperRegion(string $superRegionKey): array
     {
-         // This method is primarily for internal definition or reference,
+        // This method is primarily for internal definition or reference,
         // marker visibility logic in getSalesData is adjusted to rely on actual sales data matching filters.
         $superRegionDefinitions = [
             "REGION1A" => ["PONTIANAK", "KALIMANTAN BARAT", "SERANG", "TANGERANG", "LAMPUNG"],
@@ -145,8 +211,21 @@ class DashboardSalesController extends Controller
     public function __construct()
     {
         $this->rawCodeCmmtToSuperRegionKeyMap = collect([
-            "REGION 1A", "REGION 1B", "REGION 1C", "REGION 1D", "REGION 2A", "REGION 2B", "REGION 2C", "REGION 2D",
-            "REGION 3A", "REGION 3B", "REGION 3C", "REGION 4A", "REGION 4B", "KEY ACCOUNT", "COMMERCIAL"
+            "REGION 1A",
+            "REGION 1B",
+            "REGION 1C",
+            "REGION 1D",
+            "REGION 2A",
+            "REGION 2B",
+            "REGION 2C",
+            "REGION 2D",
+            "REGION 3A",
+            "REGION 3B",
+            "REGION 3C",
+            "REGION 4A",
+            "REGION 4B",
+            "KEY ACCOUNT",
+            "COMMERCIAL"
         ])->mapWithKeys(function ($item) {
             $processedKey = strtoupper(str_replace(' ', '', trim($item)));
             return [strtoupper(trim($item)) => $processedKey];
@@ -155,42 +234,46 @@ class DashboardSalesController extends Controller
 
     protected function getAvailableDateRanges()
     {
-        $minDateDb = SalesTransaction::selectRaw('MIN(STR_TO_DATE(tr_effdate, "%Y-%m-%d")) as min_date')->value('min_date');
-        $today = Carbon::now();
-        $minDateIso = $minDateDb ? Carbon::parse($minDateDb)->format('Y-m-d') : $today->format('Y-m-d');
-        $maxDateIsoForPicker = $today->format('Y-m-d');
-        $defaultStartDateIso = $today->format('Y-m-d');
-        $defaultEndDateIso = $today->format('Y-m-d');
+        return Cache::remember('dashboard_sales:date_ranges:v1', now()->addDay(), function () {
+            $today = Carbon::now();
 
-        return [
-            'min_date_iso' => $minDateIso,
-            'max_date_iso' => $maxDateIsoForPicker,
-            'default_start_date_iso' => $defaultStartDateIso,
-            'default_end_date_iso' => $defaultEndDateIso,
-        ];
+            // Prefer a plain MIN() to keep it index-friendly when possible.
+            $minDateIso = null;
+            $minDateRaw = SalesTransaction::query()->min('tr_effdate');
+            if ($minDateRaw) {
+                try {
+                    $minDateIso = Carbon::parse($minDateRaw)->format('Y-m-d');
+                } catch (\Throwable $e) {
+                    $minDateIso = null;
+                }
+            }
+
+            // Fallback for legacy string formats.
+            if (!$minDateIso) {
+                $minDateDb = SalesTransaction::selectRaw('MIN(STR_TO_DATE(tr_effdate, "%Y-%m-%d")) as min_date')->value('min_date');
+                $minDateIso = $minDateDb ? Carbon::parse($minDateDb)->format('Y-m-d') : $today->format('Y-m-d');
+            }
+
+            $maxDateIsoForPicker = $today->format('Y-m-d');
+            $defaultStartDateIso = $today->format('Y-m-d');
+            $defaultEndDateIso = $today->format('Y-m-d');
+
+            return [
+                'min_date_iso' => $minDateIso,
+                'max_date_iso' => $maxDateIsoForPicker,
+                'default_start_date_iso' => $defaultStartDateIso,
+                'default_end_date_iso' => $defaultEndDateIso,
+            ];
+        });
     }
 
     public function showMapDashboard()
     {
         $dateRanges = $this->getAvailableDateRanges();
-        $dbBrands = SalesTransaction::distinct()->orderBy('pl_desc')->pluck('pl_desc')->filter()->sort()->values()->all();
-        $dbCities = SalesTransaction::distinct()->pluck('ad_city')
-            ->filter()
-            ->map(fn($city) => strtoupper(trim($city)))
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
-        $dbCodeCmmts = SalesTransaction::distinct()->pluck('code_cmmt')
-            ->filter()
-            ->map(fn($code) => strtoupper(trim($code)))
-            ->unique()
-            ->sort()
-            ->values()
-            ->all();
 
-        $filterValues = ['brands' => $dbBrands, 'cities' => $dbCities, 'code_cmmts' => $dbCodeCmmts];
-        return view('dashboard.dashboardSales', compact('dateRanges', 'filterValues'));
+        // IMPORTANT: Do not block initial render with expensive DISTINCT scans.
+        // The UI will populate filters from the first /api/sales-data response.
+        return view('dashboard.dashboardSales', compact('dateRanges'));
     }
 
 
@@ -210,29 +293,98 @@ class DashboardSalesController extends Controller
         $startDate = Carbon::parse($request->input('startDate'));
         $endDate = Carbon::parse($request->input('endDate'));
 
-        $filterBrands = $request->input('brands', []); // These are pl_desc from sales
+        $filterBrands = $request->input('brands', []); // These are pl_desc from sales and part numbers with descriptions
         $filterCodeCmmts = array_map('strtoupper', array_map('trim', $request->input('code_cmmts', [])));
         $filterCitiesDbKeys = array_map('strtoupper', array_map('trim', $request->input('cities', [])));
 
+        // Cache the computed payload briefly to keep the UI responsive when users
+        // re-apply the same filters (common during exploration).
+        $cacheKey = 'dashboard_sales:sales_data:v1:' . sha1(json_encode([
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'brands' => array_values($filterBrands),
+            'code_cmmts' => array_values($filterCodeCmmts),
+            'cities' => array_values($filterCitiesDbKeys),
+        ]));
+
+        $cachedPayload = Cache::get($cacheKey);
+        if (is_array($cachedPayload)) {
+            return response()->json($cachedPayload);
+        }
+
+        // Separate part numbers from brands
+        $partFilters = [];
+        $brandFilters = [];
+
+        foreach ($filterBrands as $filter) {
+            if (preg_match('/^(RSH411|IUC205)\s*-\s*/', $filter, $matches)) {
+                $partFilters[] = $matches[1]; // Get just the part number
+            } else {
+                $brandFilters[] = $filter;
+            }
+        }
+
         // --- Base Query Builder ---
-        $baseQueryBuilder = function($start, $end) use ($filterBrands, $filterCodeCmmts, $filterCitiesDbKeys) {
+        $baseQueryBuilder = function ($start, $end) use ($brandFilters, $partFilters, $filterCodeCmmts, $filterCitiesDbKeys) {
             return SalesTransaction::query()
                 ->whereBetween('tr_effdate', [$start->format('Y-m-d'), $end->format('Y-m-d')])
-                ->when(count($filterBrands) > 0, fn($q) => $q->whereIn('pl_desc', $filterBrands))
+                ->when(count($brandFilters) > 0 || count($partFilters) > 0, function ($q) use ($brandFilters, $partFilters) {
+                    return $q->where(function ($query) use ($brandFilters, $partFilters) {
+                        if (count($brandFilters) > 0) {
+                            $query->orWhereIn('pl_desc', $brandFilters);
+                        }
+                        if (count($partFilters) > 0) {
+                            $query->orWhereIn('pt_part', $partFilters);
+                        }
+                        return $query;
+                    });
+                })
                 ->when(count($filterCodeCmmts) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(code_cmmt))'), $filterCodeCmmts))
                 ->when(count($filterCitiesDbKeys) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(ad_city))'), $filterCitiesDbKeys));
         };
 
         // --- Calculate Available Filter Options ---
+        // Get brands
         $brandsQueryForOptions = SalesTransaction::query()
             ->whereBetween('tr_effdate', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->when(count($filterCodeCmmts) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(code_cmmt))'), $filterCodeCmmts))
-            ->when(count($filterCitiesDbKeys) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(ad_city))'), $filterCitiesDbKeys));
-        $availableBrands = $brandsQueryForOptions->distinct()->orderBy('pl_desc')->pluck('pl_desc')->filter()->sort()->values()->all();
+            ->when(count($filterCitiesDbKeys) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(ad_city))'), $filterCitiesDbKeys))
+            ->when(count($brandFilters) > 0, fn($q) => $q->whereIn('pl_desc', $brandFilters))
+            ->when(count($partFilters) > 0, fn($q) => $q->whereIn('pt_part', $partFilters));
+        $availableBrands = $brandsQueryForOptions->distinct()->orderBy('pl_desc')->pluck('pl_desc')->filter()->values()->all();
+
+        // Get parts with descriptions
+        $availableParts = SalesTransaction::query()
+            ->whereBetween('tr_effdate', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
+            ->whereIn('pt_part', ['RSH411', 'IUC205'])
+            ->when(count($filterCodeCmmts) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(code_cmmt))'), $filterCodeCmmts))
+            ->when(count($filterCitiesDbKeys) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(ad_city))'), $filterCitiesDbKeys))
+            ->select('pt_part', 'pt_desc1')
+            ->distinct()
+            ->get()
+            ->map(function ($item) {
+                return strtoupper($item->pt_part . ' - ' . $item->pt_desc1);
+            })
+            ->values()
+            ->all();
+
+        // Combine brands and parts then sort
+        $availableBrands = array_merge($availableBrands, $availableParts);
+        sort($availableBrands);
 
         $codeCmmtsQueryForOptions = SalesTransaction::query()
             ->whereBetween('tr_effdate', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->when(count($filterBrands) > 0, fn($q) => $q->whereIn('pl_desc', $filterBrands))
+            ->when(count($filterBrands) > 0 || count($partFilters) > 0, function ($q) use ($filterBrands, $partFilters) {
+                return $q->where(function ($query) use ($filterBrands, $partFilters) {
+                    if (count($filterBrands) > 0) {
+                        $query->orWhereIn('pl_desc', $filterBrands);
+                    }
+                    if (count($partFilters) > 0) {
+                        $query->orWhereIn('pt_part', $partFilters);
+                    }
+                    return $query;
+                });
+            })
             ->when(count($filterCitiesDbKeys) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(ad_city))'), $filterCitiesDbKeys));
         $availableCodeCmmts = $codeCmmtsQueryForOptions->distinct()
             ->select(DB::raw('UPPER(TRIM(code_cmmt)) as code_cmmt_val'))
@@ -240,7 +392,17 @@ class DashboardSalesController extends Controller
 
         $citiesQueryForOptions = SalesTransaction::query()
             ->whereBetween('tr_effdate', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
-            ->when(count($filterBrands) > 0, fn($q) => $q->whereIn('pl_desc', $filterBrands))
+            ->when(count($filterBrands) > 0 || count($partFilters) > 0, function ($q) use ($filterBrands, $partFilters) {
+                return $q->where(function ($query) use ($filterBrands, $partFilters) {
+                    if (count($filterBrands) > 0) {
+                        $query->orWhereIn('pl_desc', $filterBrands);
+                    }
+                    if (count($partFilters) > 0) {
+                        $query->orWhereIn('pt_part', $partFilters);
+                    }
+                    return $query;
+                });
+            })
             ->when(count($filterCodeCmmts) > 0, fn($q) => $q->whereIn(DB::raw('UPPER(TRIM(code_cmmt))'), $filterCodeCmmts));
         $availableCities = $citiesQueryForOptions->distinct()
             ->select(DB::raw('UPPER(TRIM(ad_city)) as ad_city_val'))
@@ -281,37 +443,36 @@ class DashboardSalesController extends Controller
 
         $budgetQueryBase = DB::table('standard_budgets');
 
-        // If specific brands are filtered on the dashboard, apply to budget query
-        // Assumes $filterBrands contains brand names that match 'brand_name' in 'standard_budgets' table.
-        if (count($filterBrands) > 0) {
-            $budgetQueryBase->whereIn('brand_name', $filterBrands);
+        // If specific brands are filtered on the dashboard, apply to budget query.
+        // NOTE: Only brand filters should affect budgets (part numbers won't match budget brand names).
+        if (count($brandFilters) > 0) {
+            $budgetQueryBase->whereIn('brand_name', $brandFilters);
         }
 
-        // Fetch all relevant budget data in one go
-        $relevantBudgets = $budgetQueryBase
+        // Aggregate budgets in SQL to reduce memory/CPU in PHP.
+        $budgetSums = $budgetQueryBase
             ->where(function ($query) use ($monthPeriod) {
                 foreach ($monthPeriod as $date) {
                     $query->orWhere(function ($q) use ($date) {
                         $q->where('year', $date->year)
-                          ->where('month', $date->month);
+                            ->where('month', $date->month);
                     });
                 }
             })
-            ->select('name_region', 'amount') // We only need these for summing up
-            ->get();
+            ->selectRaw('UPPER(REPLACE(TRIM(name_region), " ", "")) as region_key, SUM(amount) as total_amount')
+            ->groupBy('region_key')
+            ->pluck('total_amount', 'region_key');
 
-        // Aggregate budgets in PHP
-        foreach ($relevantBudgets as $budgetEntry) {
-            $processedRegionKey = strtoupper(str_replace(' ', '', trim($budgetEntry->name_region)));
-            $budgetsByRegionKey[$processedRegionKey] = ($budgetsByRegionKey[$processedRegionKey] ?? 0) + (float)$budgetEntry->amount;
-        }
+        $budgetsByRegionKey = $budgetSums->map(fn($v) => (float) $v)->all();
         // --- End Budget Data (MODIFIED SECTION) ---
 
 
         $worldSales = [];
         $indonesiaSuperRegionSales = [];
         $baseEntry = ['sales' => 0, 'budget' => 0, 'lastYearSales' => 0, 'sales_value' => 0, 'margin_value' => 0];
-
+        // Inisialisasi untuk Australia dan New Zealand
+        $worldSales["Australia"] = $baseEntry;
+        $worldSales["New Zealand"] = $baseEntry;
         foreach ($this->indonesiaSuperRegionKeys as $srk) {
             $indonesiaSuperRegionSales[$srk] = $baseEntry;
             // Use the new $budgetsByRegionKey
@@ -320,22 +481,24 @@ class DashboardSalesController extends Controller
 
         $allCountryDbKeys = array_unique(array_merge(
             array_keys($this->countryMapping),
-            $aggregatedSales->pluck('code_cmmt_upper')->filter(fn($cc) =>
+            $aggregatedSales->pluck('code_cmmt_upper')->filter(
+                fn($cc) =>
                 !in_array($cc, $this->indonesiaSuperRegionKeys) &&
-                !isset($this->rawCodeCmmtToSuperRegionKeyMap[$cc]) &&
-                $cc !== 'INDONESIA'
+                    !isset($this->rawCodeCmmtToSuperRegionKeyMap[$cc]) &&
+                    $cc !== 'INDONESIA'
             )->all(),
-            $aggregatedSalesLy->keys()->filter(fn($cc) =>
+            $aggregatedSalesLy->keys()->filter(
+                fn($cc) =>
                 !in_array($cc, $this->indonesiaSuperRegionKeys) &&
-                !isset($this->rawCodeCmmtToSuperRegionKeyMap[$cc]) &&
-                $cc !== 'INDONESIA'
+                    !isset($this->rawCodeCmmtToSuperRegionKeyMap[$cc]) &&
+                    $cc !== 'INDONESIA'
             )->all()
         ));
 
         foreach ($allCountryDbKeys as $rawDbK) {
             $tName = $this->countryMapping[$rawDbK] ?? $rawDbK; // Display name
             $budgetKey = strtoupper(str_replace(' ', '', $rawDbK)); // Key for budget lookup
-            if($budgetKey === "UNITEDSTATESOFAMERICA") $budgetKey = "UNITEDSTATES";
+            if ($budgetKey === "UNITEDSTATESOFAMERICA") $budgetKey = "UNITEDSTATES";
 
             $worldSales[$tName] = $baseEntry;
             // Use the new $budgetsByRegionKey
@@ -343,16 +506,16 @@ class DashboardSalesController extends Controller
         }
 
         if (!isset($worldSales["Indonesia"])) {
-             $worldSales["Indonesia"] = $baseEntry;
-             // Use the new $budgetsByRegionKey
-             $worldSales["Indonesia"]['budget'] = $budgetsByRegionKey[strtoupper("INDONESIA")] ?? 0;
+            $worldSales["Indonesia"] = $baseEntry;
+            // Use the new $budgetsByRegionKey
+            $worldSales["Indonesia"]['budget'] = $budgetsByRegionKey[strtoupper("INDONESIA")] ?? 0;
         }
 
         // --- Aggregation of Sales (Current and LY) and City Sales ---
         // This part remains largely the same, as it's about sales data.
 
         $citySalesAggregationCurrent = $aggregatedSales->groupBy('ad_city_upper')
-            ->map(function($group) {
+            ->map(function ($group) {
                 return [
                     'sales' => $group->sum('total_sales'),
                     'sales_value' => $group->sum('total_sales_value'),
@@ -362,26 +525,41 @@ class DashboardSalesController extends Controller
 
         foreach ($aggregatedSales as $aggSale) {
             $codeCmmtUp = $aggSale->code_cmmt_upper;
-            $totalTon = (float)$aggSale->total_sales;
+            $totalTon = round((float)$aggSale->total_sales, 3);
             $totalSalesVal = (float)$aggSale->total_sales_value;
             $totalMarginVal = (float)$aggSale->total_margin_value;
 
             $srk = $this->rawCodeCmmtToSuperRegionKeyMap[$codeCmmtUp] ?? (in_array($codeCmmtUp, $this->indonesiaSuperRegionKeys) ? $codeCmmtUp : null);
 
+            // Tangani super region Indonesia
             if ($srk && isset($indonesiaSuperRegionSales[$srk])) {
                 $indonesiaSuperRegionSales[$srk]['sales'] += $totalTon;
                 $indonesiaSuperRegionSales[$srk]['sales_value'] += $totalSalesVal;
                 $indonesiaSuperRegionSales[$srk]['margin_value'] += $totalMarginVal;
-            } elseif (isset($this->countryMapping[$codeCmmtUp])) {
+            }
+            // Tangani khusus untuk EXPORT AUSTRALIA (Australia dan New Zealand)
+            elseif ($codeCmmtUp === "EXPORT AUSTRALIA") {
+                $worldSales["Australia"]['sales'] += $totalTon / 2; // Bagi rata antara Australia dan New Zealand
+                $worldSales["Australia"]['sales_value'] += $totalSalesVal / 2;
+                $worldSales["Australia"]['margin_value'] += $totalMarginVal / 2;
+
+                $worldSales["New Zealand"]['sales'] += $totalTon / 2;
+                $worldSales["New Zealand"]['sales_value'] += $totalSalesVal / 2;
+                $worldSales["New Zealand"]['margin_value'] += $totalMarginVal / 2;
+            }
+            // Tangani negara lain berdasarkan countryMapping
+            elseif (isset($this->countryMapping[$codeCmmtUp])) {
                 $sName = $this->countryMapping[$codeCmmtUp];
                 if (isset($worldSales[$sName])) {
                     $worldSales[$sName]['sales'] += $totalTon;
                     $worldSales[$sName]['sales_value'] += $totalSalesVal;
                     $worldSales[$sName]['margin_value'] += $totalMarginVal;
                 }
-            } elseif ($codeCmmtUp !== 'INDONESIA' && !isset($this->rawCodeCmmtToSuperRegionKeyMap[$codeCmmtUp]) && !in_array($codeCmmtUp, $this->indonesiaSuperRegionKeys)) {
+            }
+            // Tangani negara baru yang tidak ada di countryMapping
+            elseif ($codeCmmtUp !== 'INDONESIA' && !isset($this->rawCodeCmmtToSuperRegionKeyMap[$codeCmmtUp]) && !in_array($codeCmmtUp, $this->indonesiaSuperRegionKeys)) {
                 $displayName = $codeCmmtUp;
-                if(!isset($worldSales[$displayName])) {
+                if (!isset($worldSales[$displayName])) {
                     $worldSales[$displayName] = $baseEntry;
                     $budgetKeyForNewCountry = strtoupper(str_replace(' ', '', $displayName));
                     $worldSales[$displayName]['budget'] = $budgetsByRegionKey[$budgetKeyForNewCountry] ?? 0;
@@ -392,15 +570,17 @@ class DashboardSalesController extends Controller
             }
         }
 
-        if(isset($worldSales["Indonesia"])){
-            $totalIdnSales = 0; $totalIdnSalesValue = 0; $totalIdnMarginValue = 0;
-            foreach($indonesiaSuperRegionSales as $data) {
+        if (isset($worldSales["Indonesia"])) {
+            $totalIdnSales = 0;
+            $totalIdnSalesValue = 0;
+            $totalIdnMarginValue = 0;
+            foreach ($indonesiaSuperRegionSales as $data) {
                 $totalIdnSales += $data['sales'];
                 $totalIdnSalesValue += $data['sales_value'];
                 $totalIdnMarginValue += $data['margin_value'];
             }
             $directIndonesiaSales = $aggregatedSales->where('code_cmmt_upper', 'INDONESIA')->first();
-            if($directIndonesiaSales){
+            if ($directIndonesiaSales) {
                 $totalIdnSales += (float)$directIndonesiaSales->total_sales;
                 $totalIdnSalesValue += (float)$directIndonesiaSales->total_sales_value;
                 $totalIdnMarginValue += (float)$directIndonesiaSales->total_margin_value;
@@ -411,7 +591,7 @@ class DashboardSalesController extends Controller
         }
 
         foreach ($aggregatedSalesLy as $codeCmmtUp => $aggSaleLyData) {
-            $totalTonLy = (float)$aggSaleLyData->total_sales_ly;
+            $totalTonLy = round((float)$aggSaleLyData->total_sales_ly, 3);
             $srk = $this->rawCodeCmmtToSuperRegionKeyMap[$codeCmmtUp] ?? (in_array($codeCmmtUp, $this->indonesiaSuperRegionKeys) ? $codeCmmtUp : null);
 
             if ($srk && isset($indonesiaSuperRegionSales[$srk])) {
@@ -420,8 +600,8 @@ class DashboardSalesController extends Controller
                 $sName = $this->countryMapping[$codeCmmtUp];
                 if (isset($worldSales[$sName])) $worldSales[$sName]['lastYearSales'] += $totalTonLy;
             } elseif ($codeCmmtUp !== 'INDONESIA' && !isset($this->rawCodeCmmtToSuperRegionKeyMap[$codeCmmtUp]) && !in_array($codeCmmtUp, $this->indonesiaSuperRegionKeys)) {
-                 $displayName = $codeCmmtUp;
-                if(isset($worldSales[$displayName])) {
+                $displayName = $codeCmmtUp;
+                if (isset($worldSales[$displayName])) {
                     $worldSales[$displayName]['lastYearSales'] += $totalTonLy;
                 } else {
                     $worldSales[$displayName] = $baseEntry;
@@ -432,12 +612,12 @@ class DashboardSalesController extends Controller
             }
         }
 
-        if(isset($worldSales["Indonesia"])) {
+        if (isset($worldSales["Indonesia"])) {
             $totalIdnLySales = 0;
-            foreach($indonesiaSuperRegionSales as $data) $totalIdnLySales += $data['lastYearSales'];
+            foreach ($indonesiaSuperRegionSales as $data) $totalIdnLySales += $data['lastYearSales'];
             $directIndonesiaSalesLy = $aggregatedSalesLy->get('INDONESIA');
-            if($directIndonesiaSalesLy){
-                 $totalIdnLySales += (float)$directIndonesiaSalesLy->total_sales_ly;
+            if ($directIndonesiaSalesLy) {
+                $totalIdnLySales += (float)$directIndonesiaSalesLy->total_sales_ly;
             }
             $worldSales["Indonesia"]['lastYearSales'] = $totalIdnLySales;
         }
@@ -447,10 +627,10 @@ class DashboardSalesController extends Controller
         $internationalCityMarkers = [];
         $isAnyIndoRelatedFilterActive = false;
         if (count($filterCodeCmmts) > 0) {
-             if (in_array('INDONESIA', $filterCodeCmmts)) {
-                 $isAnyIndoRelatedFilterActive = true;
-             }
-             if (!$isAnyIndoRelatedFilterActive) {
+            if (in_array('INDONESIA', $filterCodeCmmts)) {
+                $isAnyIndoRelatedFilterActive = true;
+            }
+            if (!$isAnyIndoRelatedFilterActive) {
                 foreach ($filterCodeCmmts as $fcc) {
                     $potentialSrKey = $this->rawCodeCmmtToSuperRegionKeyMap[$fcc] ?? $fcc;
                     if (in_array($potentialSrKey, $this->indonesiaSuperRegionKeys)) {
@@ -458,7 +638,7 @@ class DashboardSalesController extends Controller
                         break;
                     }
                 }
-             }
+            }
         } else {
             $isAnyIndoRelatedFilterActive = true;
         }
@@ -480,19 +660,26 @@ class DashboardSalesController extends Controller
                 $countryCodeForThisCity = strtoupper(trim($cityInfo['country_code_cmmt_key']));
                 if (count($filterCodeCmmts) > 0 && !in_array($countryCodeForThisCity, $filterCodeCmmts)) continue;
                 $internationalCityMarkers[] = [
-                    'name' => $cityInfo['display_name'], 'db_key' => $cityDbKeyForMarker,
-                    'lat' => $cityInfo['lat'], 'lng' => $cityInfo['lng'], 'sales' => $sales,
+                    'name' => $cityInfo['display_name'],
+                    'db_key' => $cityDbKeyForMarker,
+                    'lat' => $cityInfo['lat'],
+                    'lng' => $cityInfo['lng'],
+                    'sales' => $sales,
                     'country' => $this->countryMapping[$countryCodeForThisCity] ?? $countryCodeForThisCity
                 ];
             }
         }
 
-        return response()->json([
+        $payload = [
             'worldSales' => $worldSales,
             'indonesiaSuperRegionSales' => $indonesiaSuperRegionSales,
             'cityMarkers' => $cityMarkers,
             'internationalCityMarkers' => $internationalCityMarkers,
             'availableFilterOptions' => $availableFilterOptions,
-        ]);
+        ];
+
+        Cache::put($cacheKey, $payload, now()->addMinutes(5));
+
+        return response()->json($payload);
     }
 }

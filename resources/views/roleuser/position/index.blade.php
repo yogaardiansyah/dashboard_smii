@@ -2,6 +2,8 @@
     @section('title')
         List Positions
     @endsection
+
+    @include('layouts.partials.vendor.datatables')
     <div class="content-header">
         <div class="flex items-center justify-between">
             <h4 class="page-title text-2xl font-lg"></h4>

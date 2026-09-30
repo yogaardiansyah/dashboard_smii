@@ -39,9 +39,17 @@ class RoleController extends Controller
             ]
         ]);
 
-        Role::create([
+        $role = Role::create([
             'name' => $request->name
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role Created Successfully',
+                'data' => $role
+            ]);
+        }
 
         return redirect('roles')->with('status','Role Created Successfully');
     }
@@ -67,6 +75,14 @@ class RoleController extends Controller
             'name' => $request->name
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role Updated Successfully',
+                'data' => $role
+            ]);
+        }
+
         return redirect('roles')->with('status','Role Updated Successfully');
     }
 
@@ -74,6 +90,14 @@ class RoleController extends Controller
     {
         $role = Role::find($roleId);
         $role->delete();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role Deleted Successfully'
+            ]);
+        }
+
         return redirect('roles')->with('status','Role Deleted Successfully');
     }
 

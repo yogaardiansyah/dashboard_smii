@@ -63,6 +63,27 @@ return [
             ]) : [],
         ],
 
+        'mysql_job' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_JOB_URL'),
+            'host' => env('DB_JOB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('DB_JOB_PORT', env('DB_PORT', '3306')),
+            'database' => env('DB_JOB_DATABASE', 'intra_smii_job'),
+            'username' => env('DB_JOB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('DB_JOB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('DB_JOB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
+
 
         'pgsql' => [
             'driver' => 'pgsql',

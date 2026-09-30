@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardSalesController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\HSE\SafetyBoardController;
+use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PositionController;
@@ -9,19 +12,22 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QAD\InventoryController;
 use App\Http\Controllers\QAD\ProductionController;
 use App\Http\Controllers\QAD\SalesController;
+use App\Http\Controllers\Marsho\ActivityLogController;
+use App\Http\Controllers\Marsho\AreaController;
+use App\Http\Controllers\Marsho\JobController;
+use App\Http\Controllers\Marsho\MarshoDepartmentController;
+use App\Http\Controllers\Marsho\MarshoUserController;
+use App\Http\Controllers\Marsho\ReportController;
 use App\Http\Controllers\Role\PermissionController;
 use App\Http\Controllers\Role\RoleController;
+use App\Http\Controllers\StandardBudgetController;
 use App\Http\Controllers\UserController;
 use Artesaos\SEOTools\Facades\SEOMeta;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardSalesController;
-use App\Http\Controllers\StandardBudgetController;
-use App\Http\Controllers\KanbanController;
-use App\Http\Controllers\HSE\SafetyBoardController;
-
 
 Route::get('/', function () {
     SEOMeta::setTitle('Intra Dashboard SMII');
+
     return redirect()->route('login');
 });
 
@@ -37,50 +43,43 @@ Route::middleware('auth', 'redirect.if.role')->group(function () {
 
     Route::get('/get-data-master', [UserController::class, 'getDataMaster'])->name('get.master');
 
-
     Route::get('/dashboard-sales', [DashboardSalesController::class, 'showMapDashboard'])->name('dashboard.dashboardSales');
     Route::get('/api/sales-data', [DashboardSalesController::class, 'getSalesData'])->name('api.sales.data');
-    
 
     Route::get('dashboard/inventory/wsa', [InventoryController::class, 'getDashboardInventory'])->name('dashboard.inventory.wsa');
     Route::get('dashboard/inventory', [InventoryController::class, 'index'])->name('dashboard.inventory');
 
-
     Route::post('dashboard/production/get', [ProductionController::class, 'getProductions'])->name('dashboard.production.wsa');
     Route::get('production', [ProductionController::class, 'index'])->name('data.production');
-
 
     Route::post('dashboard/sales/get', [SalesController::class, 'getSalesDashboard'])->name('dashboard.sales.wsa');
     Route::get('sales', [SalesController::class, 'index'])->name('data.sales');
 
-Route::prefix('standard-budgets')->name('standard-budgets.')->middleware('auth')->group(function () { // Added middleware('auth') as an example, adjust as needed
-    Route::get('/', [StandardBudgetController::class, 'index'])->name('index');
-    Route::post('/', [StandardBudgetController::class, 'store'])->name('store');
+    Route::prefix('standard-budgets')->name('standard-budgets.')->middleware('auth')->group(function () { // Added middleware('auth') as an example, adjust as needed
+        Route::get('/', [StandardBudgetController::class, 'index'])->name('index');
+        Route::post('/', [StandardBudgetController::class, 'store'])->name('store');
 
-    Route::get('/download-sample', [StandardBudgetController::class, 'downloadSample'])->name('download-sample');
-    Route::post('/import', [StandardBudgetController::class, 'importExcel'])->name('import.excel');
+        Route::get('/download-sample', [StandardBudgetController::class, 'downloadSample'])->name('download-sample');
+        Route::post('/import', [StandardBudgetController::class, 'importExcel'])->name('import.excel');
 
-    // **IMPORTANT: Define specific routes like bulk-delete BEFORE parameterized routes**
-    Route::delete('/bulk-delete', [StandardBudgetController::class, 'bulkDestroy'])->name('bulk-delete'); // MOVED UP
+        // **IMPORTANT: Define specific routes like bulk-delete BEFORE parameterized routes**
+        Route::delete('/bulk-delete', [StandardBudgetController::class, 'bulkDestroy'])->name('bulk-delete'); // MOVED UP
 
-    // CRUD for individual items (parameterized routes)
-    Route::get('/{standardBudget}/edit', [StandardBudgetController::class, 'edit'])->name('edit');
-    Route::put('/{standardBudget}', [StandardBudgetController::class, 'update'])->name('update');
-    Route::delete('/{standardBudget}', [StandardBudgetController::class, 'destroy'])->name('destroy'); // Stays after bulk-delete
-});
+        // CRUD for individual items (parameterized routes)
+        Route::get('/{standardBudget}/edit', [StandardBudgetController::class, 'edit'])->name('edit');
+        Route::put('/{standardBudget}', [StandardBudgetController::class, 'update'])->name('update');
+        Route::delete('/{standardBudget}', [StandardBudgetController::class, 'destroy'])->name('destroy'); // Stays after bulk-delete
+    });
 
     Route::get('/standard-budgets/sample/download', function () {
         $filePath = storage_path('app/files/sample_budgets.xlsx');
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             abort(404, 'File tidak ditemukan.');
         }
 
         return response()->download($filePath, 'sample_budgets.xlsx');
     })->name('standard-budgets.download-sample');
-
-
-
 
     Route::get('dashboard/standard-production/', [ProductionController::class, 'standardProduction'])->name('dashboard.production.standard');
     Route::post('dashboard/standard-production/', [ProductionController::class, 'storeStandardProductions'])->name('dashboard.production.standard.store');
@@ -103,19 +102,17 @@ Route::prefix('standard-budgets')->name('standard-budgets.')->middleware('auth')
     Route::get('dashboard/inventory', [InventoryController::class, 'index'])->name('dashboard.inventory');
 
     Route::get('dashboard-warehouse', function () {
-        return view("dashboard.dashboardWarehouse");
+        return view('dashboard.dashboardWarehouse');
     })->name('dashboard.dashboardWarehouse');
     Route::get('dashboard/dashboard-production', [ProductionController::class, 'dashboardProductionIndex'])->name('dashboard.dashboardProduction');
-
 
     Route::get('dashboard-inventory', [InventoryController::class, 'dashboardInventory'])->name('dashboard.dashboardInventory');
 
     Route::prefix('dashboard/safety-board')->name('dashboard.safety-board.')->group(function () {
         Route::get('/', [SafetyBoardController::class, 'index'])->name('index');
         Route::get('/api/safety-data', [SafetyBoardController::class, 'getSafetyData']); // For AJAX calls
-        
-    });
 
+    });
 
     Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::post('/notifications/markAllAsRead', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
@@ -131,24 +128,48 @@ Route::prefix('standard-budgets')->name('standard-budgets.')->middleware('auth')
     Route::delete('/tasks/{task}', [KanbanController::class, 'destroy'])->name('tasks.destroy');
     Route::get('/tasks/approval/{token}', [KanbanController::class, 'handleApproval'])->name('tasks.handle_approval');
     Route::post('/tasks/approval/{token}', [KanbanController::class, 'handleApproval'])->name('tasks.submit_rejection');
+
+    // Marsho Job Board
+    Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+    Route::post('/jobs', [JobController::class, 'store'])->name('jobs.store');
+    Route::post('/jobs/{job}/forward', [JobController::class, 'forward'])->name('jobs.forward');
+    Route::patch('/jobs/{job}/complete', [JobController::class, 'complete'])->name('jobs.complete');
+    Route::post('/jobs/{job}/close', [JobController::class, 'close'])->name('jobs.close');
+    Route::patch('/jobs/{job}/change-status', [JobController::class, 'changeStatus'])->name('jobs.changeStatus');
+    Route::get('/jobs/{job}/details', [JobController::class, 'showDetails'])->name('jobs.details');
+    Route::patch('/jobs/{job}/cancel', [JobController::class, 'cancel'])->name('jobs.cancel');
+
+    // Marsho Resources (Area & Department)
+    Route::resource('areas', AreaController::class)->except(['create', 'show', 'edit']);
+    Route::put('/areas/{area}', [AreaController::class, 'update'])->name('areas.update');
+    Route::delete('/areas/{area}', [AreaController::class, 'destroy'])->name('areas.destroy');
+    Route::resource('marsho-departments', MarshoDepartmentController::class)->except(['show', 'edit', 'create']);
+
+    // Marsho Activity Log
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/jobs/{job}/activity-logs', [ActivityLogController::class, 'showForJob'])->name('jobs.activity-logs.show');
+
+    // Marsho Users
+    Route::get('/marsho-users', [MarshoUserController::class, 'index'])->name('marsho-users.index');
+    Route::post('/marsho-users', [MarshoUserController::class, 'store'])->name('marsho-users.store');
+
+    // Marsho Reports & Export
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/marsho-jobs', [ReportController::class, 'showJobsExportPage'])->name('marsho-jobs.page');
+        Route::get('/marsho-jobs/export', [ReportController::class, 'exportMarshoJobs'])->name('marsho-jobs.export');
+    });
 });
-
-
 
 Route::get('/get-dashboard-production', [ProductionController::class, 'dashboardProduction']);
 Route::get('/bar-data', [ProductionController::class, 'getBarData']);
 Route::get('/data-filter', [ProductionController::class, 'filterData']);
 Route::get('/year-data', [ProductionController::class, 'getBarDataByYear']);
 
-
-
 Route::get('/area-data', [InventoryController::class, 'getAreaData']);
 Route::get('/warehouse-data-filter', [InventoryController::class, 'warehouseFilterData']);
 Route::get('/warehouse-dispatch-filter', [InventoryController::class, 'warehouseAreaDispatch']);
 Route::get('/warehouse-data', [InventoryController::class, 'getWarehouseDataCombined'])->name('warehouse.getWarehouseData');
 Route::get('/warehouse-temperature', [InventoryController::class, 'getWarehouseDataWithTemperature']);
-
-
 
 Route::group(['middleware' => ['role:super-admin|admin']], function () {
 
@@ -179,4 +200,4 @@ Route::group(['middleware' => ['role:super-admin|admin']], function () {
     Route::delete('levels/{level:level_slug}/delete', [LevelController::class, 'destroy'])->name('level.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

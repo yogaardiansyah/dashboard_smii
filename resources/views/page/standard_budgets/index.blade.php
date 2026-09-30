@@ -3,6 +3,8 @@
     Standar Budget
     @endsection
 
+    @include('layouts.partials.vendor.datatables')
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>

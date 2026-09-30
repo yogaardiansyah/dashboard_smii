@@ -30,6 +30,15 @@ class DepartmentController extends Controller
         $department = new Department();
         $department->department_name = $request->department_name;
         $department->save();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Department created successfully!',
+                'data' => $department
+            ]);
+        }
+
         Alert::toast('Department created successfully!', 'success');
         return redirect()->route('department.index');
     }
@@ -44,6 +53,15 @@ class DepartmentController extends Controller
         ]);
 
         $department->update($request->all());
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Department Updated successfully!',
+                'data' => $department
+            ]);
+        }
+
         Alert::toast('Department Updated successfully!','success');
         return redirect()->route('department.index');
     }
@@ -54,7 +72,14 @@ class DepartmentController extends Controller
     public function destroy(Department $department)
     {
         $department->delete();
-        // alert()->success('Department deleted successfully!', 'Department has been deleted.');
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Department deleted successfully!'
+            ]);
+        }
+
         Alert::toast('Department deleted successfully!','success');
 
         return redirect()->route('department.index');

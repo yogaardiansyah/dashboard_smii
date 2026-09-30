@@ -24,7 +24,7 @@ class UserController extends Controller
         $this->middleware('permission:view user', ['only' => ['index']]);
         $this->middleware('permission:create user', ['only' => ['create', 'store']]);
         $this->middleware('permission:update user', ['only' => ['update', 'edit']]);
-        $this->middleware('permission:updateProfile user', ['only' => ['updateProfile']]);
+        // $this->middleware('permission:updateProfile user', ['only' => ['updateProfile']]);
         $this->middleware('permission:delete user', ['only' => ['destroy']]);
     }
 
@@ -48,10 +48,10 @@ class UserController extends Controller
     {
         // \dd($request->all());
         $request->validate([
-            'nik' => 'required|min:4|max:6|unique:users,nik',
+            'nik' => 'required|min:4|max:8|unique:users,nik',
             'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|max:20',
             'roles' => 'required'
         ]);
@@ -67,6 +67,15 @@ class UserController extends Controller
         ]);
 
         $user->syncRoles($request->roles);
+
+        if ($request->ajax()) {
+            $user->load(['position', 'department', 'roles']);
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully with roles!',
+                'data' => $user
+            ]);
+        }
 
         Alert::toast('User created successfully with roles!', 'success');
         return redirect()->route('users.index');
@@ -85,11 +94,12 @@ class UserController extends Controller
         ], compact('positions', 'department'));
     }
 
+
     public function update(Request $request, User $user)
     {
         // Validate the request data
         $request->validate([
-            'email' => 'required|email|max:255' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'nik' => 'required|min:4|max:6|unique:users,nik,' . $user->id,
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'name' => 'required|string|max:255',
@@ -152,12 +162,19 @@ class UserController extends Controller
         // Sync user roles
         $user->syncRoles($request->roles);
 
+        if ($request->ajax()) {
+            $user->load(['position', 'department', 'roles']);
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully with roles!',
+                'data' => $user
+            ]);
+        }
+
         // Flash success message and redirect
         Alert::toast('User updated successfully with roles!', 'success');
         return redirect()->route('users.index');
     }
-
-
 
     public function destroy($userId)
     {
@@ -170,18 +187,27 @@ class UserController extends Controller
 
         $user->delete();
 
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully!'
+            ]);
+        }
+
         Alert::toast('User deleted successfully!', 'success');
         return redirect()->route('users.index');
     }
+
 
     public function updateProfile(Request $request)
     {
         $request->validate([
             'nik' => 'required|min:4|max:6|unique:users,nik,' . $request->user()->id,
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255' . $request->user()->id,
+            'email' => 'required|email|max:255|unique:users,email,' . $request->user()->id,
             'password' => 'nullable|string|min:8|max:20',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
         ]);
 
         $user = $request->user();
@@ -189,35 +215,32 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
 
-        // Update password if provided
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
 
-        // Handle avatar upload
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if it exists
             if ($user->avatar) {
                 Storage::disk('public')->delete('user_avatars/' . $user->avatar);
             }
 
-            // Get original extension
-            $extension = $request->avatar->getClientOriginalExtension();
-
-            // Store new avatar with username
-            $avatarName = $user->username . '.' . $extension;
-            $path = $request->avatar->storeAs('user_avatars', $avatarName, 'public');
-
-            // Log path for debugging
-            Log::channel('custom')->info('Avatar stored at path: ' . $path);
-            Log::channel('custom')->info('Storage directory contents:', Storage::disk('public')->allFiles('user_avatars'));
-
-            // Verify that file exists
-            if (!Storage::disk('public')->exists('user_avatars/' . $avatarName)) {
-                Log::error('Failed to store avatar: ' . $avatarName);
-            }
+            $file = $request->file('avatar');
+            $avatarName = $user->username . '.' . $file->getClientOriginalExtension();
+            Storage::disk('public')->putFileAs('user_avatars', $file, $avatarName);
 
             $user->avatar = $avatarName;
+        }
+
+        if ($request->hasFile('banner')) {
+            if ($user->banner) {
+                Storage::disk('public')->delete('user_banners/' . $user->banner);
+            }
+
+            $file = $request->file('banner');
+            $bannerName = $user->username . '_banner.' . $file->getClientOriginalExtension();
+            Storage::disk('public')->putFileAs('user_banners', $file, $bannerName);
+
+            $user->banner = $bannerName;
         }
 
         $user->save();

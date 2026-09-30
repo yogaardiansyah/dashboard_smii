@@ -4,6 +4,8 @@
         Production Output
     @endsection
 
+    @include('layouts.partials.vendor.datatables')
+
     <div class="content-header">
         <div class="flex items-center justify-between">
             <h4 class="page-title text-2xl font-medium"></h4>
@@ -56,7 +58,6 @@
     </section>
 
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             function showSuccessMessage(message) {
                 Swal.fire({

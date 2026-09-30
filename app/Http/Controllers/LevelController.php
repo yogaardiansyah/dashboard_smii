@@ -33,6 +33,15 @@ class LevelController extends Controller
         $level = new Level();
         $level->level_name = $request->level_name;
         $level->save();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Level created successfully!',
+                'data' => $level
+            ]);
+        }
+
         Alert::toast('Level created successfully!', 'success');
         return redirect()->route('level.index');
     }
@@ -48,6 +57,15 @@ class LevelController extends Controller
         ]);
 
         $level->update($request->all());
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Level updated successfully!',
+                'data' => $level
+            ]);
+        }
+
         Alert::toast('Level updated successfully!', 'success');
         return redirect()->route('level.index');
     }
@@ -58,6 +76,14 @@ class LevelController extends Controller
     public function destroy(Level $level)
     {
         $level->delete();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Level deleted successfully!'
+            ]);
+        }
+
         Alert::toast('Level deleted successfully!', 'success');
         return redirect()->route('level.index');
     }

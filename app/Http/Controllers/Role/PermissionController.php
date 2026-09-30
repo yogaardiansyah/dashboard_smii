@@ -37,9 +37,17 @@ class PermissionController extends Controller
             ]
         ]);
 
-        Permission::create([
+        $permission = Permission::create([
             'name' => $request->name
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission Created Successfully',
+                'data' => $permission
+            ]);
+        }
 
         return redirect('permissions')->with('status','Permission Created Successfully');
     }
@@ -63,6 +71,14 @@ class PermissionController extends Controller
             'name' => $request->name
         ]);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission Updated Successfully',
+                'data' => $permission
+            ]);
+        }
+
         return redirect('permissions')->with('status','Permission Updated Successfully');
     }
 
@@ -70,6 +86,14 @@ class PermissionController extends Controller
     {
         $permission = Permission::find($permissionId);
         $permission->delete();
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Permission Deleted Successfully'
+            ]);
+        }
+
         return redirect('permissions')->with('status','Permission Deleted Successfully');
     }
 }
