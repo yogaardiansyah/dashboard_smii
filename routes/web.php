@@ -21,6 +21,12 @@ use App\Http\Controllers\Role\PermissionController;
 use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\StandardBudgetController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Kanban\JobController as KanbanJobController;
+use App\Http\Controllers\Kanban\AreaController as KanbanAreaController;
+use App\Http\Controllers\Kanban\DepartmentController as KanbanDepartmentController;
+use App\Http\Controllers\Kanban\UserController as KanbanUserController;
+use App\Http\Controllers\Kanban\ActivityLogController as KanbanActivityLogController;
+use App\Http\Controllers\Kanban\ReportController as KanbanReportController;
 use Artesaos\SEOTools\Facades\SEOMeta;
 use Illuminate\Support\Facades\Route;
 
@@ -148,6 +154,56 @@ Route::middleware('auth', 'redirect.if.role')->group(function () {
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/marsho-jobs', [ReportController::class, 'showJobsExportPage'])->name('marsho-jobs.page');
         Route::get('/marsho-jobs/export', [ReportController::class, 'exportMarshoJobs'])->name('marsho-jobs.export');
+    });
+
+    // ==========================================
+    // Kanban V2 Module Routes
+    // ==========================================
+    Route::prefix('kanban')->name('kanban.')->group(function () {
+        // Kanban Board & Job Actions
+        Route::get('/jobs', [KanbanJobController::class, 'index'])->name('jobs.index');
+        Route::post('/jobs', [KanbanJobController::class, 'store'])->name('jobs.store');
+        Route::get('/jobs/{job}/details', [KanbanJobController::class, 'showDetails'])->name('jobs.details');
+        Route::patch('/jobs/{job}/schedule', [KanbanJobController::class, 'setSchedule'])->name('jobs.schedule');
+        Route::patch('/jobs/{job}/agree', [KanbanJobController::class, 'agree'])->name('jobs.agree');
+        Route::patch('/jobs/{job}/return-on-hold', [KanbanJobController::class, 'returnToOnHold'])->name('jobs.return-on-hold');
+        Route::patch('/jobs/{job}/re-review', [KanbanJobController::class, 'reReview'])->name('jobs.re-review');
+        Route::patch('/jobs/{job}/toggle-issue', [KanbanJobController::class, 'toggleIssue'])->name('jobs.toggle-issue');
+        Route::post('/jobs/{job}/split', [KanbanJobController::class, 'split'])->name('jobs.split');
+        Route::match(['post', 'patch'], '/jobs/{job}/items/{item}/toggle', [KanbanJobController::class, 'toggleItem'])->name('jobs.items.toggle');
+        Route::match(['post', 'patch'], '/jobs/{job}/set-preparation', [KanbanJobController::class, 'setPreparation'])->name('jobs.set-preparation');
+        Route::match(['post', 'patch'], '/jobs/{job}/start', [KanbanJobController::class, 'start'])->name('jobs.start');
+        Route::match(['post', 'patch'], '/jobs/{job}/change-status', [KanbanJobController::class, 'changeStatus'])->name('jobs.change-status');
+        Route::post('/jobs/{job}/forward', [KanbanJobController::class, 'forward'])->name('jobs.forward');
+        Route::patch('/jobs/{job}/complete', [KanbanJobController::class, 'complete'])->name('jobs.complete');
+        Route::post('/jobs/{job}/close', [KanbanJobController::class, 'close'])->name('jobs.close');
+        Route::post('/jobs/{job}/cancel', [KanbanJobController::class, 'cancel'])->name('jobs.cancel');
+
+        // Kanban Areas
+        Route::get('/areas', [KanbanAreaController::class, 'index'])->name('areas.index');
+        Route::post('/areas', [KanbanAreaController::class, 'store'])->name('areas.store');
+        Route::put('/areas/{area}', [KanbanAreaController::class, 'update'])->name('areas.update');
+        Route::delete('/areas/{area}', [KanbanAreaController::class, 'destroy'])->name('areas.destroy');
+
+        // Kanban Departments
+        Route::get('/departments', [KanbanDepartmentController::class, 'index'])->name('departments.index');
+        Route::post('/departments', [KanbanDepartmentController::class, 'store'])->name('departments.store');
+        Route::put('/departments/{department}', [KanbanDepartmentController::class, 'update'])->name('departments.update');
+        Route::delete('/departments/{department}', [KanbanDepartmentController::class, 'destroy'])->name('departments.destroy');
+
+        // Kanban Users
+        Route::get('/users', [KanbanUserController::class, 'index'])->name('users.index');
+        Route::post('/users', [KanbanUserController::class, 'store'])->name('users.store');
+
+        // Kanban Activity Logs
+        Route::get('/activity-logs', [KanbanActivityLogController::class, 'index'])->name('activity-logs.index');
+        Route::get('/jobs/{job}/activity-logs', [KanbanActivityLogController::class, 'showForJob'])->name('jobs.activity-logs.show');
+
+        // Kanban Reports
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/jobs', [KanbanReportController::class, 'showJobsExportPage'])->name('jobs.page');
+            Route::get('/jobs/export', [KanbanReportController::class, 'exportJobs'])->name('jobs.export');
+        });
     });
 });
 
