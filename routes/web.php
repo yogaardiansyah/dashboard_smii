@@ -4,20 +4,19 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardSalesController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\HSE\SafetyBoardController;
-use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\LevelController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\PositionController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\QAD\InventoryController;
-use App\Http\Controllers\QAD\ProductionController;
-use App\Http\Controllers\QAD\SalesController;
 use App\Http\Controllers\Marsho\ActivityLogController;
 use App\Http\Controllers\Marsho\AreaController;
 use App\Http\Controllers\Marsho\JobController;
 use App\Http\Controllers\Marsho\MarshoDepartmentController;
 use App\Http\Controllers\Marsho\MarshoUserController;
 use App\Http\Controllers\Marsho\ReportController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PositionController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QAD\InventoryController;
+use App\Http\Controllers\QAD\ProductionController;
+use App\Http\Controllers\QAD\SalesController;
 use App\Http\Controllers\Role\PermissionController;
 use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\StandardBudgetController;
@@ -120,14 +119,6 @@ Route::middleware('auth', 'redirect.if.role')->group(function () {
     Route::get('/notifications/count', function () {
         return response()->json(['count' => auth()->user()->unreadNotifications->count()]);
     })->name('notifications.count');
-
-    // kanban
-    Route::get('/kanban', [KanbanController::class, 'index'])->name('page.kanban.index');
-    Route::post('/tasks', [KanbanController::class, 'store'])->name('tasks.store');
-    Route::patch('/tasks/{task}/status', [KanbanController::class, 'updateStatus'])->name('tasks.updateStatus');
-    Route::delete('/tasks/{task}', [KanbanController::class, 'destroy'])->name('tasks.destroy');
-    Route::get('/tasks/approval/{token}', [KanbanController::class, 'handleApproval'])->name('tasks.handle_approval');
-    Route::post('/tasks/approval/{token}', [KanbanController::class, 'handleApproval'])->name('tasks.submit_rejection');
 
     // Marsho Job Board
     Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
