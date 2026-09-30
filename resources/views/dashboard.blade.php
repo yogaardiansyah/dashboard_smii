@@ -1,4 +1,4 @@
-﻿<x-app-layout>
+<x-app-layout>
     @section('title')
         Operational Dashboard SMII
     @endsection
@@ -794,35 +794,7 @@
                 </div>
             </div>
 
-            <!-- 3. E-Commerce Card -->
-            <div class="dashboard-card"
-                style="--card-gradient: linear-gradient(90deg, #a855f7, #ec4899);
-                       --card-glow-shadow: rgba(168, 85, 247, 0.25);
-                       --icon-bg-hover: rgba(168, 85, 247, 0.15);
-                       --icon-border-hover: rgba(168, 85, 247, 0.4);
-                       --tag-bg-hover: rgba(168, 85, 247, 0.9);
-                       --btn-gradient: linear-gradient(135deg, #9333ea 0%, #db2777 100%);"
-                onclick="window.location.href='{{ url('/dashboard/ecommerce') }}'">
-                <div class="card-glow-bar"></div>
-                <div class="card-shimmer"></div>
-
-                <div class="card-header-badge">
-                    <div class="card-icon-wrapper">🛒</div>
-                    <span class="tag-badge">Multi-Channel</span>
-                </div>
-                <div class="card-body-content">
-                    <div class="card-title">E-Commerce</div>
-                    <div class="card-desc">Monitor online sales, product performance, Shopee, Tokopedia & TikTok.</div>
-                </div>
-                <div class="card-footer-action">
-                    <button class="btn-glass-action">
-                        <span>Go E-Commerce</span>
-                        <i class="fa-solid fa-arrow-right btn-arrow"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 4. Warehouse Card (Modal Trigger) -->
+            <!-- 3. Warehouse Card -->
             <div class="dashboard-card" id="warehouse-card"
                 style="--card-gradient: linear-gradient(90deg, #f59e0b, #ea580c);
                        --card-glow-shadow: rgba(245, 158, 11, 0.25);
@@ -830,7 +802,7 @@
                        --icon-border-hover: rgba(245, 158, 11, 0.4);
                        --tag-bg-hover: rgba(245, 158, 11, 0.9);
                        --btn-gradient: linear-gradient(135deg, #d97706 0%, #ea580c 100%);"
-                onclick="openModal('modal-employee')">
+                onclick="window.location.href='{{ url('dashboard-warehouse') }}'">
                 <div class="card-glow-bar"></div>
                 <div class="card-shimmer"></div>
 
@@ -840,45 +812,17 @@
                 </div>
                 <div class="card-body-content">
                     <div class="card-title">Warehouse</div>
-                    <div class="card-desc">Manage stock, occupancy, temperature, incoming items, and expiries.</div>
+                    <div class="card-desc">Manage stock, item movement, and inventory status with interactive visuals.</div>
                 </div>
                 <div class="card-footer-action">
                     <button class="btn-glass-action">
-                        <span>Open Details</span>
+                        <span>Go Warehouse</span>
                         <i class="fa-solid fa-arrow-right btn-arrow"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- 5. Oil Card (Modal Trigger) -->
-            <div class="dashboard-card" id="oil-card"
-                style="--card-gradient: linear-gradient(90deg, #eab308, #ca8a04);
-                       --card-glow-shadow: rgba(234, 179, 8, 0.25);
-                       --icon-bg-hover: rgba(234, 179, 8, 0.15);
-                       --icon-border-hover: rgba(234, 179, 8, 0.4);
-                       --tag-bg-hover: rgba(234, 179, 8, 0.9);
-                       --btn-gradient: linear-gradient(135deg, #ca8a04 0%, #b45309 100%);"
-                onclick="openModal('modal-oil')">
-                <div class="card-glow-bar"></div>
-                <div class="card-shimmer"></div>
-
-                <div class="card-header-badge">
-                    <div class="card-icon-wrapper">🛢️</div>
-                    <span class="tag-badge">Oil OSM</span>
-                </div>
-                <div class="card-body-content">
-                    <div class="card-title">Oil Monitoring</div>
-                    <div class="card-desc">Oil Monitoring & Oil Stock status. Klik untuk detail sistem minyak.</div>
-                </div>
-                <div class="card-footer-action">
-                    <button class="btn-glass-action">
-                        <span>Open Details</span>
-                        <i class="fa-solid fa-arrow-right btn-arrow"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 6. Safety Board Card -->
+            <!-- 4. Safety Board Card -->
             <div class="dashboard-card"
                 style="--card-gradient: linear-gradient(90deg, #ef4444, #f97316);
                        --card-glow-shadow: rgba(239, 68, 68, 0.25);
@@ -904,244 +848,6 @@
                         <i class="fa-solid fa-arrow-right btn-arrow"></i>
                     </button>
                 </div>
-            </div>
-
-            <!-- 7. Marsho Line Status Card -->
-            <div class="dashboard-card"
-                style="--card-gradient: linear-gradient(90deg, #6366f1, #2563eb);
-                       --card-glow-shadow: rgba(99, 102, 241, 0.25);
-                       --icon-bg-hover: rgba(99, 102, 241, 0.15);
-                       --icon-border-hover: rgba(99, 102, 241, 0.4);
-                       --tag-bg-hover: rgba(99, 102, 241, 0.9);
-                       --btn-gradient: linear-gradient(135deg, #4338ca 0%, #2563eb 100%);"
-                onclick="window.location.href='{{ url('/production-monitoring') }}'">
-                <div class="card-glow-bar"></div>
-                <div class="card-shimmer"></div>
-
-                <div class="card-header-badge">
-                    <div class="card-icon-wrapper">🔄</div>
-                    <span class="tag-badge">Line Status</span>
-                </div>
-                <div class="card-body-content">
-                    <div class="card-title">Marsho Line Status</div>
-                    <div class="card-desc">Open the Marsho production line status dashboard (RUN / OFF overview).</div>
-                </div>
-                <div class="card-footer-action">
-                    <button class="btn-glass-action">
-                        <span>Go Status</span>
-                        <i class="fa-solid fa-arrow-right btn-arrow"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 8. HSE Environment Card -->
-            <div class="dashboard-card"
-                style="--card-gradient: linear-gradient(90deg, #14b8a6, #10b981);
-                       --card-glow-shadow: rgba(20, 184, 166, 0.25);
-                       --icon-bg-hover: rgba(20, 184, 166, 0.15);
-                       --icon-border-hover: rgba(20, 184, 166, 0.4);
-                       --tag-bg-hover: rgba(20, 184, 166, 0.9);
-                       --btn-gradient: linear-gradient(135deg, #0d9488 0%, #059669 100%);"
-                onclick="window.location.href='{{ url('/environment/dashboard') }}'">
-                <div class="card-glow-bar"></div>
-                <div class="card-shimmer"></div>
-
-                <div class="card-header-badge">
-                    <div class="card-icon-wrapper">🌍</div>
-                    <span class="tag-badge">Eco System</span>
-                </div>
-                <div class="card-body-content">
-                    <div class="card-title">HSE Environment</div>
-                    <div class="card-desc">Monitor pengelolaan limbah, konsumsi air, listrik, dan parameter lingkungan.
-                    </div>
-                </div>
-                <div class="card-footer-action">
-                    <button class="btn-glass-action">
-                        <span>Go HSE</span>
-                        <i class="fa-solid fa-arrow-right btn-arrow"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Warehouse Modal -->
-    <div id="modal-employee"
-        class="modal-overlay fixed inset-0 z-[1050] hidden overflow-y-auto flex items-center justify-center p-4">
-        <div class="modal-glass-content relative w-full max-w-5xl overflow-hidden">
-            <div class="modal-glass-header flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">🏬</span>
-                    <h3 id="modal-title" class="text-xl font-bold tracking-wide">Warehouse Options</h3>
-                </div>
-                <button type="button"
-                    class="close-modal transition-colors text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer"
-                    data-modal="modal-employee">&times;</button>
-            </div>
-
-            <input type="hidden" name="id" id="emp-id">
-
-            <div class="p-8 overflow-y-auto max-h-[75vh]">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Outward Card -->
-                    <div class="dashboard-card"
-                        style="--card-gradient: linear-gradient(90deg, #f59e0b, #ea580c);
-                               --card-glow-shadow: rgba(245, 158, 11, 0.25);
-                               --icon-bg-hover: rgba(245, 158, 11, 0.15);
-                               --icon-border-hover: rgba(245, 158, 11, 0.4);
-                               --tag-bg-hover: rgba(245, 158, 11, 0.9);
-                               --btn-gradient: linear-gradient(135deg, #d97706 0%, #ea580c 100%);"
-                        onclick="window.location.href='{{ url('dashboard-warehouse') }}'">
-                        <div class="card-glow-bar"></div>
-                        <div class="card-shimmer"></div>
-
-                        <div class="card-header-badge">
-                            <div class="card-icon-wrapper">📦</div>
-                            <span class="tag-badge">Outward</span>
-                        </div>
-                        <div class="card-body-content">
-                            <div class="card-title">Warehouse Outward</div>
-                            <div class="card-desc">Manage stock, item movement, and inventory status with interactive
-                                visuals.</div>
-                        </div>
-                        <div class="card-footer-action">
-                            <button class="btn-glass-action">
-                                <span>Go Outward</span>
-                                <i class="fa-solid fa-arrow-right btn-arrow"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Inward Card -->
-                    <div class="dashboard-card" id="warehouse-inward-card-modal"
-                        style="--card-gradient: linear-gradient(90deg, #0284c7, #2563eb);
-                               --card-glow-shadow: rgba(2, 132, 199, 0.25);
-                               --icon-bg-hover: rgba(2, 132, 199, 0.15);
-                               --icon-border-hover: rgba(2, 132, 199, 0.4);
-                               --tag-bg-hover: rgba(2, 132, 199, 0.9);
-                               --btn-gradient: linear-gradient(135deg, #0284c7 0%, #1d4ed8 100%);"
-                        onclick="location.href='{{ url('inward-dashboard') }}'">
-                        <div class="card-glow-bar"></div>
-                        <div class="card-shimmer"></div>
-
-                        <div class="card-header-badge">
-                            <div class="card-icon-wrapper">🏬</div>
-                            <span class="tag-badge">Inward & Temp</span>
-                        </div>
-                        <div class="card-body-content">
-                            <div class="card-title">Warehouse Inward</div>
-                            <div class="card-desc">Realtime occupancy, storage temperature, daily incoming & expiry
-                                status.</div>
-
-                            <!-- Realtime Inward Stats Badge -->
-                            <div class="mt-4 pt-3 border-t border-slate-500/20 grid grid-cols-2 gap-2 text-xs">
-                                <div>Occupancy: <span id="wi-occupancy" class="font-bold text-sky-500">-</span></div>
-                                <div>Incoming: <span id="wi-daily-incoming"
-                                        class="font-bold text-emerald-500">-</span></div>
-                                <div>Suhu 20-25°C: <span id="wi-temp-20-25" class="font-bold text-amber-500">-</span>
-                                </div>
-                                <div>Suhu 5-10°C: <span id="wi-temp-5-10" class="font-bold text-cyan-500">-</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-footer-action">
-                            <button class="btn-glass-action">
-                                <span>Go Inward</span>
-                                <i class="fa-solid fa-arrow-right btn-arrow"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-glass-footer flex justify-end">
-                <button type="button"
-                    class="close-modal px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md cursor-pointer"
-                    data-modal="modal-employee">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Oil Modal -->
-    <div id="modal-oil"
-        class="modal-overlay fixed inset-0 z-[1050] hidden overflow-y-auto flex items-center justify-center p-4">
-        <div class="modal-glass-content relative w-full max-w-5xl overflow-hidden">
-            <div class="modal-glass-header flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">🛢️</span>
-                    <h3 class="text-xl font-bold tracking-wide">Oil Monitoring Options</h3>
-                </div>
-                <button type="button"
-                    class="close-modal transition-colors text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-lg cursor-pointer"
-                    data-modal="modal-oil">&times;</button>
-            </div>
-
-            <div class="p-8 overflow-y-auto max-h-[75vh]">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Advanced OSM Card -->
-                    <div class="dashboard-card"
-                        style="--card-gradient: linear-gradient(90deg, #eab308, #ca8a04);
-                               --card-glow-shadow: rgba(234, 179, 8, 0.25);
-                               --icon-bg-hover: rgba(234, 179, 8, 0.15);
-                               --icon-border-hover: rgba(234, 179, 8, 0.4);
-                               --tag-bg-hover: rgba(234, 179, 8, 0.9);
-                               --btn-gradient: linear-gradient(135deg, #ca8a04 0%, #a16207 100%);"
-                        onclick="window.location.href='{{ route('oil.index') }}'">
-                        <div class="card-glow-bar"></div>
-                        <div class="card-shimmer"></div>
-
-                        <div class="card-header-badge">
-                            <div class="card-icon-wrapper">📈</div>
-                            <span class="tag-badge">Advanced</span>
-                        </div>
-                        <div class="card-body-content">
-                            <div class="card-title">Advanced OSM</div>
-                            <div class="card-desc">Realtime monitoring refinery, tank readings, dan input station.
-                            </div>
-                        </div>
-                        <div class="card-footer-action">
-                            <button class="btn-glass-action">
-                                <span>Go Advanced</span>
-                                <i class="fa-solid fa-arrow-right btn-arrow"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- General OSM Card -->
-                    <div class="dashboard-card"
-                        style="--card-gradient: linear-gradient(90deg, #f59e0b, #ea580c);
-                               --card-glow-shadow: rgba(245, 158, 11, 0.25);
-                               --icon-bg-hover: rgba(245, 158, 11, 0.15);
-                               --icon-border-hover: rgba(245, 158, 11, 0.4);
-                               --tag-bg-hover: rgba(245, 158, 11, 0.9);
-                               --btn-gradient: linear-gradient(135deg, #d97706 0%, #ea580c 100%);"
-                        onclick="window.location.href='{{ route('rbd.dashboard') }}'">
-                        <div class="card-glow-bar"></div>
-                        <div class="card-shimmer"></div>
-
-                        <div class="card-header-badge">
-                            <div class="card-icon-wrapper">📦</div>
-                            <span class="tag-badge">General</span>
-                        </div>
-                        <div class="card-body-content">
-                            <div class="card-title">General OSM</div>
-                            <div class="card-desc">Inventory Oil dashboard, master stock, tank master, dan in/out.
-                            </div>
-                        </div>
-                        <div class="card-footer-action">
-                            <button class="btn-glass-action">
-                                <span>Go General</span>
-                                <i class="fa-solid fa-arrow-right btn-arrow"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-glass-footer flex justify-end">
-                <button type="button"
-                    class="close-modal px-6 py-2.5 rounded-xl font-semibold transition-all shadow-md cursor-pointer"
-                    data-modal="modal-oil">Close</button>
             </div>
         </div>
     </div>
@@ -1442,42 +1148,4 @@
         });
     </script>
 
-    <!-- Inward Dashboard Fetcher -->
-    <script>
-        (function() {
-            async function loadWarehouseInward() {
-                try {
-                    const resp = await fetch('/inward-dashboard/data');
-                    if (!resp.ok) return;
-                    const json = await resp.json();
-
-                    const storageAreas = json.storageAreas || [];
-                    let occ = '-';
-                    if (storageAreas.length) {
-                        const pack = storageAreas.find(a => /packag|ambien/i.test(a.name || '')) || storageAreas[0];
-                        occ = (Number(pack.occupancy_percent) || 0).toFixed(1) + '%';
-                    }
-                    const occEl = document.getElementById('wi-occupancy');
-                    if (occEl) occEl.textContent = occ;
-
-                    const temps = json.temperatureGroups || {};
-                    const t20 = document.getElementById('wi-temp-20-25');
-                    if (t20) t20.textContent = (temps['Ingredient 20-25'] !== undefined ? temps[
-                        'Ingredient 20-25'] + ' °C' : '-');
-
-                    const t5 = document.getElementById('wi-temp-5-10');
-                    if (t5) t5.textContent = (temps['Ingredient 5-10'] !== undefined ? temps['Ingredient 5-10'] +
-                        ' °C' : '-');
-
-                    const incoming = json.incoming || [];
-                    const incEl = document.getElementById('wi-daily-incoming');
-                    if (incEl) incEl.textContent = incoming.length + ' records';
-                } catch (e) {
-                    // silent
-                }
-            }
-            loadWarehouseInward();
-            setInterval(loadWarehouseInward, 30000);
-        })();
-    </script>
 </x-app-layout>
