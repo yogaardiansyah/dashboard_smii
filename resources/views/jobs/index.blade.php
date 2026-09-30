@@ -10,10 +10,13 @@
             .pl-modal-overlay:not(.active) {
                 display: none !important;
             }
+
             .pl-modal-overlay.active {
                 display: flex !important;
             }
-            .swal2-container, div:where(.swal2-container) {
+
+            .swal2-container,
+            div:where(.swal2-container) {
                 z-index: 2147483647 !important;
                 position: fixed !important;
             }
@@ -188,10 +191,10 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
         @include('jobs.modals.create')
         @include('jobs.modals.move_stage')
@@ -476,7 +479,6 @@
             .dark-skin .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                 background: #6b7280;
             }
-
         </style>
 
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -502,7 +504,8 @@
 
                             const tempDiv = document.createElement('div');
                             tempDiv.innerHTML = html;
-                            targetColumn.insertAdjacentElement('afterbegin', tempDiv.firstElementChild || tempDiv.firstChild);
+                            targetColumn.insertAdjacentElement('afterbegin', tempDiv.firstElementChild || tempDiv
+                                .firstChild);
                         }
                     }
 
@@ -536,12 +539,13 @@
 
                     // Universal close modal handler on click (data-close-modal, data-hide, .pl-modal-close, .modal-cancel-button)
                     document.addEventListener('click', function(e) {
-                        const closeTrigger = e.target.closest('[data-close-modal], [data-hide], .pl-modal-close, .modal-cancel-button');
+                        const closeTrigger = e.target.closest(
+                            '[data-close-modal], [data-hide], .pl-modal-close, .modal-cancel-button');
                         if (closeTrigger) {
                             e.preventDefault();
-                            const targetId = closeTrigger.getAttribute('data-close-modal') || 
-                                             closeTrigger.getAttribute('data-hide') || 
-                                             closeTrigger.closest('.pl-modal-overlay')?.id;
+                            const targetId = closeTrigger.getAttribute('data-close-modal') ||
+                                closeTrigger.getAttribute('data-hide') ||
+                                closeTrigger.closest('.pl-modal-overlay')?.id;
                             if (targetId) {
                                 closeModal(targetId);
                             }
@@ -587,19 +591,10 @@
                                     }
                                     errorHtml += '</ul>';
                                 }
-                                const activeModal = document.querySelector('.pl-modal-overlay.active');
                                 Swal.fire({
                                     icon: 'error',
                                     title: 'Action Failed',
-                                    html: errorHtml,
-                                    target: activeModal || document.body,
-                                    didOpen: () => {
-                                        const swalContainer = document.querySelector('.swal2-container');
-                                        if (swalContainer) {
-                                            swalContainer.style.setProperty('z-index', '2147483647', 'important');
-                                            swalContainer.style.setProperty('position', 'fixed', 'important');
-                                        }
-                                    }
+                                    html: errorHtml
                                 });
                                 return false;
                             }
@@ -610,15 +605,7 @@
                                 icon: 'success',
                                 title: data.message || 'Success!',
                                 showConfirmButton: false,
-                                timer: 3000,
-                                target: document.body,
-                                didOpen: (toast) => {
-                                    const swalContainer = toast.closest('.swal2-container') || document.querySelector('.swal2-container');
-                                    if (swalContainer) {
-                                        swalContainer.style.setProperty('z-index', '2147483647', 'important');
-                                        swalContainer.style.setProperty('position', 'fixed', 'important');
-                                    }
-                                }
+                                timer: 3000
                             });
 
                             if (!window.Echo && data.job && data.html) {
@@ -628,19 +615,10 @@
                         } catch (error) {
                             hideSpinner();
                             console.error('Submit error:', error);
-                            const activeModal = document.querySelector('.pl-modal-overlay.active');
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                text: 'Connection failed or server error.',
-                                target: activeModal || document.body,
-                                didOpen: () => {
-                                    const swalContainer = document.querySelector('.swal2-container');
-                                    if (swalContainer) {
-                                        swalContainer.style.setProperty('z-index', '2147483647', 'important');
-                                        swalContainer.style.setProperty('position', 'fixed', 'important');
-                                    }
-                                }
+                                text: 'Connection failed or server error.'
                             });
                             return false;
                         } finally {
@@ -738,7 +716,8 @@
                                         content.innerHTML = data.html;
                                     })
                                     .catch(() => {
-                                        content.innerHTML = '<p class="text-red-500 text-center py-8">Failed to load details.</p>';
+                                        content.innerHTML =
+                                            '<p class="text-red-500 text-center py-8">Failed to load details.</p>';
                                     });
                             }
                             return;

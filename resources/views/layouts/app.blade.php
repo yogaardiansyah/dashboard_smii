@@ -275,17 +275,41 @@
                 if (window.Swal && !window.Swal._isPatchedForModals) {
                     const originalFire = window.Swal.fire.bind(window.Swal);
                     window.Swal.fire = function(...args) {
-                        const activeModal = document.querySelector('.pl-modal-overlay.active, .image-preview-overlay[style*="display: flex"]');
-                        if (activeModal && args[0] && typeof args[0] === 'object' && !args[0].toast && !args[0].target) {
-                            args[0].target = activeModal;
+                        // Find any active modal overlay
+                        const activeModals = document.querySelectorAll('.pl-modal-overlay.active, .image-preview-overlay[style*="display: flex"]');
+
+                        // Temporarily lower active modal z-index so SweetAlert appears on top.
+                        // backdrop-filter on .pl-modal-overlay creates a stacking context that
+                        // traps z-index comparisons — the only reliable fix is to lower the modal.
+                        activeModals.forEach(function(m) {
+                            m.dataset.prevZindex = m.style.zIndex || '';
+                            m.style.setProperty('z-index', '1', 'important');
+                        });
+
+                        // Ensure SweetAlert config doesn't target inside the modal
+                        if (args[0] && typeof args[0] === 'object' && args[0].target) {
+                            delete args[0].target;
                         }
+
                         const res = originalFire(...args);
-                        requestAnimationFrame(() => {
+
+                        // Force swal container above everything
+                        requestAnimationFrame(function() {
                             document.querySelectorAll('.swal2-container').forEach(function(swal) {
                                 swal.style.setProperty('z-index', '2147483647', 'important');
                                 swal.style.setProperty('position', 'fixed', 'important');
                             });
                         });
+
+                        // Restore modal z-index when SweetAlert closes
+                        if (res && typeof res.then === 'function') {
+                            res.then(function() {
+                                activeModals.forEach(function(m) {
+                                    m.style.setProperty('z-index', m.dataset.prevZindex || '1040', 'important');
+                                });
+                            });
+                        }
+
                         return res;
                     };
                     window.Swal._isPatchedForModals = true;
