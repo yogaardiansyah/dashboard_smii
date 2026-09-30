@@ -68,6 +68,10 @@
                 max-height: 75vh;
                 overflow-y: auto;
             }
+            .swal2-container, div:where(.swal2-container) {
+                z-index: 2147483647 !important;
+                position: fixed !important;
+            }
         </style>
     @endpush
 
@@ -141,6 +145,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Image Preview Modal -->
+    @include('jobs.modals.image_preview')
 
     @push('scripts')
         <script>

@@ -1,51 +1,48 @@
-<div id="forwardJobModal"
-    class="hidden fixed inset-0 z-50 overflow-y-auto backdrop-blur-xl bg-gray-900/50 transition-opacity">
-    <div class="flex items-center justify-center min-h-screen p-4">
+<div id="forwardJobModal" class="pl-modal-overlay">
+    <div class="pl-modal-panel pl-modal-panel-md">
+        <div class="pl-modal-header">
+            <div>
+                <span class="pl-hero-kicker" style="margin-bottom: 2px; color: rgba(255,255,255,0.7); font-size: 11px;">Workflow Routing</span>
+                <h3 class="pl-modal-title">Forward Job</h3>
+            </div>
+            <button type="button" class="pl-modal-close" data-close-modal="forwardJobModal" aria-label="Close">&times;</button>
+        </div>
 
-        <div class="relative bg-white w-full max-w-lg mx-auto p-6 rounded-lg shadow-2xl border border-gray-100">
+        <form id="forwardJobForm" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" id="forward_job_id" name="job_id">
 
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Forward Job</h3>
-
-            <form id="forwardJobForm" class="space-y-4" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" id="forward_job_id" name="job_id">
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Forward to Department</label>
-                    <select name="to_department_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
-                        required>
+            <div class="pl-modal-body bg-slate-50">
+                <div class="form-group-custom">
+                    <label for="forward_to_department_id">Forward to Department <span class="text-red-500">*</span></label>
+                    <select name="to_department_id" id="forward_to_department_id" class="form-control-custom" required>
+                        <option value="" disabled selected>-- Select Destination Department --</option>
                         @foreach($departments as $id => $name)
                             <option value="{{ $id }}">{{ $name }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Notes (Required)</label>
-                    <textarea name="note"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-yellow-500 focus:border-yellow-500"
-                        rows="3" required></textarea>
+                <div class="form-group-custom">
+                    <label for="forward_note">Routing Notes <span class="text-red-500">*</span></label>
+                    <textarea name="note" id="forward_note" rows="3" class="form-control-custom"
+                        required placeholder="Detail reason for forwarding and any specific instructions..."></textarea>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Attachments (Optional)</label>
-                    <input type="file" name="attachments[]" class="block w-full text-sm text-gray-500 mt-1" multiple>
+                <div class="form-group-custom mb-0">
+                    <label for="forward_attachments">Attachments <span class="text-xs text-slate-400 font-normal">(Optional, max 3 files)</span></label>
+                    <input type="file" name="attachments[]" id="forward_attachments" class="form-control-custom" multiple>
                 </div>
+            </div>
 
-                <div class="flex justify-end space-x-3 pt-4">
-
-                    <button type="button" onclick="document.getElementById('forwardJobModal').classList.add('hidden')"
-                        class="modal-cancel-button bg-gray-500 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition">
-                        Cancel
-                    </button>
-
-                    <button type="submit"
-                        class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-md transition shadow-lg">
-                        Forward
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="pl-modal-footer">
+                <button type="button" class="pl-btn pl-btn-neutral" data-close-modal="forwardJobModal">
+                    Cancel
+                </button>
+                <button type="submit" class="pl-btn" style="background: #d97706; color: #ffffff;">
+                    <i class="fa-solid fa-share mr-2"></i> Forward Job
+                </button>
+            </div>
+        </form>
     </div>
 </div>

@@ -1,29 +1,31 @@
-<div id="createJobModal"
-    class="hidden fixed inset-0 z-50 overflow-y-auto backdrop-blur-xl bg-gray-900/50 transition-opacity">
-    <div class="flex items-center justify-center min-h-screen p-4">
+<div id="createJobModal" class="pl-modal-overlay">
+    <div class="pl-modal-panel pl-modal-panel-lg">
+        <div class="pl-modal-header">
+            <div>
+                <span class="pl-hero-kicker" style="margin-bottom: 2px; color: rgba(255,255,255,0.7); font-size: 11px;">Job Workflow</span>
+                <h3 class="pl-modal-title">Create New Job</h3>
+            </div>
+            <button type="button" class="pl-modal-close" data-close-modal="createJobModal" aria-label="Close">&times;</button>
+        </div>
 
-        <div class="relative bg-white w-full max-w-lg mx-auto p-6 rounded-lg shadow-2xl border border-gray-100">
-
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">Create New Job</h3>
-
-            <form id="createJobForm" class="space-y-4" enctype="multipart/form-data">
-                @csrf
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Area</label>
-                        <select name="area_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-                            <option value="" disabled selected>Select Area</option>
+        <form id="createJobForm" enctype="multipart/form-data">
+            @csrf
+            <div class="pl-modal-body bg-slate-50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group-custom">
+                        <label for="create_area_id">Area / Location <span class="text-red-500">*</span></label>
+                        <select name="area_id" id="create_area_id" class="form-control-custom" required>
+                            <option value="" disabled selected>-- Select Operational Area --</option>
                             @foreach($areas as $id => $name)
                                 <option value="{{ $id }}">{{ $name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Initial Dept</label>
-                        <select name="to_department_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                            required>
-                            <option value="" disabled selected>Select Dept</option>
+
+                    <div class="form-group-custom">
+                        <label for="create_to_department_id">Initial Assigned Department <span class="text-red-500">*</span></label>
+                        <select name="to_department_id" id="create_to_department_id" class="form-control-custom" required>
+                            <option value="" disabled selected>-- Select Initial Dept --</option>
                             @foreach($departments as $id => $name)
                                 <option value="{{ $id }}">{{ $name }}</option>
                             @endforeach
@@ -31,43 +33,39 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Start Date</label>
-                        <input type="date" name="start_date"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required
-                            value="{{ date('Y-m-d') }}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group-custom">
+                        <label for="create_start_date">Start Date <span class="text-red-500">*</span></label>
+                        <input type="date" name="start_date" id="create_start_date" class="form-control-custom"
+                            value="{{ date('Y-m-d') }}" required>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Deadline</label>
-                        <input type="date" name="deadline"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+
+                    <div class="form-group-custom">
+                        <label for="create_deadline">Deadline <span class="text-red-500">*</span></label>
+                        <input type="date" name="deadline" id="create_deadline" class="form-control-custom" required>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Job Description</label>
-                    <textarea name="list_job" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        required></textarea>
+                <div class="form-group-custom">
+                    <label for="create_list_job">Job Description <span class="text-red-500">*</span></label>
+                    <textarea name="list_job" id="create_list_job" rows="3" class="form-control-custom"
+                        placeholder="Detail the work or instructions needed for this job..." required></textarea>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Attachments (Optional)</label>
-                    <input type="file" name="attachments[]" class="block w-full text-sm text-gray-500 mt-1" multiple>
+                <div class="form-group-custom mb-0">
+                    <label for="create_attachments">Attachments <span class="text-xs text-slate-400 font-normal">(Optional, max 3 files - jpg, png, pdf, doc)</span></label>
+                    <input type="file" name="attachments[]" id="create_attachments" class="form-control-custom" multiple>
                 </div>
+            </div>
 
-                <div class="flex justify-end space-x-3 pt-4">
-
-                    <button type="button" onclick="document.getElementById('createJobModal').classList.add('hidden')"
-                        class="bg-red-500 text-white hover:bg-red-600 font-medium py-2 px-4 rounded-md transition shadow-lg">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition shadow-lg">
-                        Create Job
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="pl-modal-footer">
+                <button type="button" class="pl-btn pl-btn-neutral" data-close-modal="createJobModal">
+                    Cancel
+                </button>
+                <button type="submit" class="pl-btn pl-btn-primary">
+                    <i class="fa-solid fa-plus mr-2"></i> Create Job
+                </button>
+            </div>
+        </form>
     </div>
 </div>

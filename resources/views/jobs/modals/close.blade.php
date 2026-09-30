@@ -1,33 +1,37 @@
-<div id="closeJobModal"
-    class="hidden fixed inset-0 z-50 overflow-y-auto backdrop-blur-xl bg-gray-900/50 transition-opacity">
-    <div class="flex items-center justify-center min-h-screen p-4">
-
-        <div class="relative bg-white w-full max-w-md mx-auto p-6 rounded-lg shadow-2xl border border-gray-100">
-
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Confirm Close Job</h3>
-
-            <form id="closeJobForm">
-                @csrf
-                <input type="hidden" id="close_job_id" name="job_id">
-
-                <p class="text-gray-600 mb-6">
-                    Are you sure you want to close this job? This will archive the job and no further changes can be
-                    made.
-                </p>
-
-                <div class="flex justify-end space-x-3">
-
-                    <button type="button" onclick="document.getElementById('closeJobModal').classList.add('hidden')"
-                        class="modal-cancel-button bg-gray-500 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition">
-                        Cancel
-                    </button>
-
-                    <button type="submit"
-                        class="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded-md transition shadow-lg">
-                        Yes, Close Job
-                    </button>
-                </div>
-            </form>
+<div id="closeJobModal" class="pl-modal-overlay">
+    <div class="pl-modal-panel pl-modal-panel-md">
+        <div class="pl-modal-header">
+            <div>
+                <span class="pl-hero-kicker" style="margin-bottom: 2px; color: rgba(255,255,255,0.7); font-size: 11px;">Job Archive</span>
+                <h3 class="pl-modal-title">Confirm Close Job</h3>
+            </div>
+            <button type="button" class="pl-modal-close" data-close-modal="closeJobModal" aria-label="Close">&times;</button>
         </div>
+
+        <form id="closeJobForm">
+            @csrf
+            <input type="hidden" id="close_job_id" name="job_id">
+
+            <div class="pl-modal-body bg-slate-50">
+                <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-sm flex items-start gap-3">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-lg mt-0.5"></i>
+                    <div>
+                        <p class="font-semibold mb-1">Archive Job Ticket</p>
+                        <p class="text-xs text-amber-800 leading-relaxed">
+                            Are you sure you want to close this job? This will archive the job ticket and notify all involved team members. No further stage moves or notes can be submitted.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pl-modal-footer">
+                <button type="button" class="pl-btn pl-btn-neutral" data-close-modal="closeJobModal">
+                    Cancel
+                </button>
+                <button type="submit" class="pl-btn pl-btn-primary">
+                    <i class="fa-solid fa-box-archive mr-2"></i> Yes, Close Job
+                </button>
+            </div>
+        </form>
     </div>
 </div>

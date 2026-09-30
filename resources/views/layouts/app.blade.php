@@ -34,7 +34,7 @@
     <link rel="stylesheet" href="{{ asset('assets') }}/src/css/skin_color.css">
     <link rel="stylesheet" href="{{ asset('assets') }}/src/css/custom.css">
     <link rel="stylesheet" href="{{ asset('assets/vendor-css/jquery-ui-1.13.2.css') }}">
-    <link href="{{ asset('assets/vendor-css/sweetalert2-11.17.2.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/vendor-css/sweetalert2-11.17.2.min.css') }}?v={{ file_exists(public_path('assets/vendor-css/sweetalert2-11.17.2.min.css')) ? filemtime(public_path('assets/vendor-css/sweetalert2-11.17.2.min.css')) : time() }}" rel="stylesheet">
 
     @stack('css')
 
@@ -52,9 +52,15 @@
 
         /* Force SweetAlert (v1 & v2) to always be above any modals */
         .swal2-container,
+        div.swal2-container,
+        div:where(.swal2-container),
+        .swal2-container.swal2-backdrop-show,
+        .swal2-container.swal2-shown,
+        body.swal2-shown .swal2-container,
         .sweet-overlay,
         .sweet-alert {
-            z-index: 999999 !important;
+            z-index: 2147483647 !important;
+            position: fixed !important;
         }
 
         /* Custom INTRA SMII Branded Preloader */
@@ -245,7 +251,96 @@
     <script src="{{ asset('assets') }}/src/js/menus.js?v={{ file_exists(public_path('assets/src/js/menus.js')) ? filemtime(public_path('assets/src/js/menus.js')) : time() }}"></script>
     <script src="{{ asset('assets') }}/src/js/template.js?v={{ file_exists(public_path('assets/src/js/template.js')) ? filemtime(public_path('assets/src/js/template.js')) : time() }}"></script>
 
-    <script src="{{ asset('assets/vendor-js/sweetalert2-11.17.2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor-js/sweetalert2-11.17.2.all.min.js') }}?v={{ file_exists(public_path('assets/vendor-js/sweetalert2-11.17.2.all.min.js')) ? filemtime(public_path('assets/vendor-js/sweetalert2-11.17.2.all.min.js')) : time() }}"></script>
+
+    <style id="swal2-top-priority">
+        .swal2-container,
+        div.swal2-container,
+        div:where(.swal2-container),
+        .swal2-container.swal2-backdrop-show,
+        .swal2-container.swal2-shown,
+        body.swal2-shown .swal2-container,
+        .sweet-overlay,
+        .sweet-alert {
+            z-index: 2147483647 !important;
+            position: fixed !important;
+        }
+    </style>
+
+    <script>
+        // Universal modal and SweetAlert priority manager
+        (function() {
+            // Monkey-patch Swal.fire so that modal dialogs automatically target any active modal
+            function patchSwal() {
+                if (window.Swal && !window.Swal._isPatchedForModals) {
+                    const originalFire = window.Swal.fire.bind(window.Swal);
+                    window.Swal.fire = function(...args) {
+                        const activeModal = document.querySelector('.pl-modal-overlay.active, .image-preview-overlay[style*="display: flex"]');
+                        if (activeModal && args[0] && typeof args[0] === 'object' && !args[0].toast && !args[0].target) {
+                            args[0].target = activeModal;
+                        }
+                        const res = originalFire(...args);
+                        requestAnimationFrame(() => {
+                            document.querySelectorAll('.swal2-container').forEach(function(swal) {
+                                swal.style.setProperty('z-index', '2147483647', 'important');
+                                swal.style.setProperty('position', 'fixed', 'important');
+                            });
+                        });
+                        return res;
+                    };
+                    window.Swal._isPatchedForModals = true;
+                }
+            }
+
+            patchSwal();
+            document.addEventListener('DOMContentLoaded', patchSwal);
+
+            function promoteModalsAndSwal() {
+                // Ensure pl-modal-overlay modals are direct children of body so they escape any parent overflow / transform
+                document.querySelectorAll('.pl-modal-overlay').forEach(function(modal) {
+                    if (modal.parentElement && modal.parentElement !== document.body) {
+                        document.body.appendChild(modal);
+                    }
+                });
+
+                // Ensure SweetAlert2 always has the maximum possible z-index
+                document.querySelectorAll('.swal2-container').forEach(function(swal) {
+                    swal.style.setProperty('z-index', '2147483647', 'important');
+                    swal.style.setProperty('position', 'fixed', 'important');
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', promoteModalsAndSwal);
+            } else {
+                promoteModalsAndSwal();
+            }
+
+            // Real-time observer to catch newly added SweetAlert containers or modals
+            const observer = new MutationObserver(function(mutations) {
+                patchSwal();
+                for (let i = 0; i < mutations.length; i++) {
+                    const added = mutations[i].addedNodes;
+                    for (let j = 0; j < added.length; j++) {
+                        const node = added[j];
+                        if (node.nodeType === 1) {
+                            if (node.classList && node.classList.contains('swal2-container')) {
+                                node.style.setProperty('z-index', '2147483647', 'important');
+                                node.style.setProperty('position', 'fixed', 'important');
+                            }
+                            if (node.classList && node.classList.contains('pl-modal-overlay')) {
+                                if (node.parentElement !== document.body) {
+                                    document.body.appendChild(node);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+        })();
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

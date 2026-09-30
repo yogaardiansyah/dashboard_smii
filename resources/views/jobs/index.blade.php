@@ -2,6 +2,23 @@
     @section('title')
         Kanban Board
     @endsection
+
+    @push('css')
+        @include('layouts.partials.roleuser_styles')
+        <style>
+            .pl-modal-overlay.hidden,
+            .pl-modal-overlay:not(.active) {
+                display: none !important;
+            }
+            .pl-modal-overlay.active {
+                display: flex !important;
+            }
+            .swal2-container, div:where(.swal2-container) {
+                z-index: 2147483647 !important;
+                position: fixed !important;
+            }
+        </style>
+    @endpush
     <x-slot name="header">
         <div class="flex flex-col md:flex-row justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight mb-4 md:mb-0">
@@ -171,10 +188,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
         @include('jobs.modals.create')
         @include('jobs.modals.move_stage')
@@ -183,6 +200,7 @@
         @include('jobs.modals.close')
         @include('jobs.modals.detail')
         @include('jobs.modals.cancel')
+        @include('jobs.modals.image_preview')
 
         <div id="global-spinner"
             class="hidden fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center">
@@ -459,16 +477,7 @@
                 background: #6b7280;
             }
 
-            #createJobModal, #moveStageModal, #forwardJobModal, #completeJobModal, #closeJobModal, #jobDetailModal, #cancelJobModal {
-                z-index: 99999 !important;
-            }
-            #createJobModal:not(.hidden), #moveStageModal:not(.hidden), #forwardJobModal:not(.hidden), #completeJobModal:not(.hidden), #closeJobModal:not(.hidden), #jobDetailModal:not(.hidden), #cancelJobModal:not(.hidden) {
-                display: flex !important;
-                align-items: center;
-                justify-content: center;
-            }
         </style>
-
 
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         @push('scripts')
@@ -477,8 +486,8 @@
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     const spinner = document.getElementById('global-spinner');
 
-                    const showSpinner = () => spinner.classList.remove('hidden');
-                    const hideSpinner = () => spinner.classList.add('hidden');
+                    const showSpinner = () => spinner && spinner.classList.remove('hidden');
+                    const hideSpinner = () => spinner && spinner.classList.add('hidden');
 
                     function updateKanbanUI(job, html) {
                         const oldCard = document.getElementById(`job-card-${job.id}`);
@@ -493,10 +502,68 @@
 
                             const tempDiv = document.createElement('div');
                             tempDiv.innerHTML = html;
-                            targetColumn.insertAdjacentElement('afterbegin', tempDiv.firstChild);
+                            targetColumn.insertAdjacentElement('afterbegin', tempDiv.firstElementChild || tempDiv.firstChild);
                         }
                     }
 
+                    // Modal controls
+                    window.openModal = function(id) {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            if (el.parentElement && el.parentElement !== document.body) {
+                                document.body.appendChild(el);
+                            }
+                            el.classList.add('active');
+                            el.classList.remove('hidden');
+                            el.style.removeProperty('display');
+                            document.body.style.overflow = 'hidden';
+                        } else {
+                            console.error('Modal not found:', id);
+                        }
+                    };
+
+                    window.closeModal = function(id) {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.classList.remove('active');
+                            el.classList.add('hidden');
+                            el.style.removeProperty('display');
+                        }
+                        if (!document.querySelector('.pl-modal-overlay.active')) {
+                            document.body.style.overflow = '';
+                        }
+                    };
+
+                    // Universal close modal handler on click (data-close-modal, data-hide, .pl-modal-close, .modal-cancel-button)
+                    document.addEventListener('click', function(e) {
+                        const closeTrigger = e.target.closest('[data-close-modal], [data-hide], .pl-modal-close, .modal-cancel-button');
+                        if (closeTrigger) {
+                            e.preventDefault();
+                            const targetId = closeTrigger.getAttribute('data-close-modal') || 
+                                             closeTrigger.getAttribute('data-hide') || 
+                                             closeTrigger.closest('.pl-modal-overlay')?.id;
+                            if (targetId) {
+                                closeModal(targetId);
+                            }
+                            return;
+                        }
+
+                        // Close when clicking directly on overlay backdrop
+                        if (e.target.classList && e.target.classList.contains('pl-modal-overlay')) {
+                            closeModal(e.target.id);
+                        }
+                    });
+
+                    // Universal escape key handler
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key === 'Escape') {
+                            document.querySelectorAll('.pl-modal-overlay.active').forEach(function(modal) {
+                                closeModal(modal.id);
+                            });
+                        }
+                    });
+
+                    // Unified Form Submitter
                     async function handleFormSubmit(url, formData) {
                         showSpinner();
                         try {
@@ -511,35 +578,71 @@
                             const data = await response.json();
 
                             if (!response.ok) {
-                                let errorHtml = data.message || 'Error occurred.';
+                                hideSpinner();
+                                let errorHtml = data.message || 'Operation failed.';
                                 if (response.status === 422 && data.errors) {
-                                    errorHtml = '<ul class="text-left list-disc list-inside mt-2">';
+                                    errorHtml = '<ul class="text-left list-disc list-inside mt-2 space-y-1">';
                                     for (const field in data.errors) {
                                         errorHtml += `<li>${data.errors[field][0]}</li>`;
                                     }
                                     errorHtml += '</ul>';
                                 }
+                                const activeModal = document.querySelector('.pl-modal-overlay.active');
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Failed',
-                                    html: errorHtml
+                                    title: 'Action Failed',
+                                    html: errorHtml,
+                                    target: activeModal || document.body,
+                                    didOpen: () => {
+                                        const swalContainer = document.querySelector('.swal2-container');
+                                        if (swalContainer) {
+                                            swalContainer.style.setProperty('z-index', '2147483647', 'important');
+                                            swalContainer.style.setProperty('position', 'fixed', 'important');
+                                        }
+                                    }
                                 });
-                                return;
+                                return false;
                             }
 
                             Swal.fire({
                                 toast: true,
                                 position: 'top-end',
                                 icon: 'success',
-                                title: data.message,
+                                title: data.message || 'Success!',
                                 showConfirmButton: false,
-                                timer: 3000
+                                timer: 3000,
+                                target: document.body,
+                                didOpen: (toast) => {
+                                    const swalContainer = toast.closest('.swal2-container') || document.querySelector('.swal2-container');
+                                    if (swalContainer) {
+                                        swalContainer.style.setProperty('z-index', '2147483647', 'important');
+                                        swalContainer.style.setProperty('position', 'fixed', 'important');
+                                    }
+                                }
                             });
 
-                            if (!window.Echo) updateKanbanUI(data.job, data.html);
+                            if (!window.Echo && data.job && data.html) {
+                                updateKanbanUI(data.job, data.html);
+                            }
+                            return data;
                         } catch (error) {
-                            console.error('Error:', error);
-                            Swal.fire('Error', 'Connection failed.', 'error');
+                            hideSpinner();
+                            console.error('Submit error:', error);
+                            const activeModal = document.querySelector('.pl-modal-overlay.active');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Connection failed or server error.',
+                                target: activeModal || document.body,
+                                didOpen: () => {
+                                    const swalContainer = document.querySelector('.swal2-container');
+                                    if (swalContainer) {
+                                        swalContainer.style.setProperty('z-index', '2147483647', 'important');
+                                        swalContainer.style.setProperty('position', 'fixed', 'important');
+                                    }
+                                }
+                            });
+                            return false;
                         } finally {
                             hideSpinner();
                         }
@@ -552,47 +655,9 @@
                             });
                     }
 
-                    function openModal(id) {
-                        const el = document.getElementById(id);
-                        if (el) {
-                            el.classList.remove('hidden');
-                            el.style.display = 'flex';
-                        } else {
-                            console.error('Modal not found:', id);
-                        }
-                    }
-
-                    function closeModal(id) {
-                        const el = document.getElementById(id);
-                        if (el) {
-                            el.classList.add('hidden');
-                            el.style.display = 'none';
-                        }
-                    }
-
-                    // Backdrop clicks to close modals
-                    ['createJobModal', 'moveStageModal', 'forwardJobModal', 'completeJobModal', 'closeJobModal', 'jobDetailModal', 'cancelJobModal'].forEach(function(modalId) {
-                        const modalEl = document.getElementById(modalId);
-                        if (modalEl) {
-                            modalEl.addEventListener('click', function(e) {
-                                if (e.target === this) {
-                                    closeModal(modalId);
-                                }
-                            });
-                        }
-                    });
-
-                    // Escape key closes modals
-                    document.addEventListener('keydown', function(e) {
-                        if (e.key === 'Escape') {
-                            ['createJobModal', 'moveStageModal', 'forwardJobModal', 'completeJobModal', 'closeJobModal', 'jobDetailModal', 'cancelJobModal'].forEach(closeModal);
-                        }
-                    });
-
+                    // Card action clicks
                     document.body.addEventListener('click', function(e) {
-
                         const moveBtn = e.target.closest('.move-stage-btn');
-
                         if (moveBtn) {
                             e.preventDefault();
                             const jobId = moveBtn.dataset.jobId;
@@ -603,9 +668,7 @@
                             const form = document.getElementById('moveStageForm');
 
                             if (modal && form) {
-
                                 form.reset();
-
                                 modal.querySelector('#move_job_id').value = jobId;
                                 modal.querySelector('#move_target_status').value = targetStatus;
 
@@ -621,8 +684,12 @@
                         if (fwdBtn) {
                             e.preventDefault();
                             const modal = document.getElementById('forwardJobModal');
-                            modal.querySelector('#forward_job_id').value = fwdBtn.dataset.jobId;
-                            openModal('forwardJobModal');
+                            const form = document.getElementById('forwardJobForm');
+                            if (modal && form) {
+                                form.reset();
+                                modal.querySelector('#forward_job_id').value = fwdBtn.dataset.jobId;
+                                openModal('forwardJobModal');
+                            }
                             return;
                         }
 
@@ -630,8 +697,12 @@
                         if (completeBtn) {
                             e.preventDefault();
                             const modal = document.getElementById('completeJobModal');
-                            modal.querySelector('#complete_job_id').value = completeBtn.dataset.jobId;
-                            openModal('completeJobModal');
+                            const form = document.getElementById('completeJobForm');
+                            if (modal && form) {
+                                form.reset();
+                                modal.querySelector('#complete_job_id').value = completeBtn.dataset.jobId;
+                                openModal('completeJobModal');
+                            }
                             return;
                         }
 
@@ -639,8 +710,12 @@
                         if (closeBtn) {
                             e.preventDefault();
                             const modal = document.getElementById('closeJobModal');
-                            modal.querySelector('#close_job_id').value = closeBtn.dataset.jobId;
-                            openModal('closeJobModal');
+                            const form = document.getElementById('closeJobForm');
+                            if (modal && form) {
+                                form.reset();
+                                modal.querySelector('#close_job_id').value = closeBtn.dataset.jobId;
+                                openModal('closeJobModal');
+                            }
                             return;
                         }
 
@@ -650,133 +725,110 @@
                             const jobId = detailBtn.dataset.jobId;
                             const content = document.getElementById('jobDetailContent');
                             openModal('jobDetailModal');
-                            content.innerHTML =
-                                '<div class="flex justify-center p-10"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div></div>';
+                            if (content) {
+                                content.innerHTML = `
+                                    <div class="flex flex-col items-center justify-center p-12 text-slate-500">
+                                        <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+                                        <span class="text-sm font-medium">Loading details & timeline...</span>
+                                    </div>`;
 
-                            fetch(`/jobs/${jobId}/details`)
-                                .then(res => res.json())
-                                .then(data => {
-                                    content.innerHTML = data.html;
-                                })
-                                .catch(() => {
-                                    content.innerHTML =
-                                        '<p class="text-red-500 text-center">Failed to load details.</p>';
-                                });
+                                fetch(`/jobs/${jobId}/details`)
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        content.innerHTML = data.html;
+                                    })
+                                    .catch(() => {
+                                        content.innerHTML = '<p class="text-red-500 text-center py-8">Failed to load details.</p>';
+                                    });
+                            }
                             return;
-                        }
-
-                        if (e.target.closest('.cancel-modal-btn') || e.target.closest('.close-detail-btn')) {
-                            e.preventDefault();
-                            const modal = e.target.closest('.fixed');
-                            if (modal) modal.classList.add('hidden');
                         }
 
                         const cancelBtn = e.target.closest('.cancel-job-btn');
                         if (cancelBtn) {
                             e.preventDefault();
                             const modal = document.getElementById('cancelJobModal');
-                            if (modal) {
+                            const form = document.getElementById('cancelJobForm');
+                            if (modal && form) {
+                                form.reset();
                                 modal.querySelector('#cancel_job_id').value = cancelBtn.dataset.jobId;
-                                modal.classList.remove('hidden');
+                                openModal('cancelJobModal');
                             }
                             return;
                         }
                     });
 
+                    // Top Toolbar: Create New Job Button
                     const createBtn = document.getElementById('openCreateJobModalBtn');
                     if (createBtn) createBtn.addEventListener('click', () => openModal('createJobModal'));
 
-                    document.getElementById('createJobForm')?.addEventListener('submit', function(e) {
+                    // Form Submissions
+                    document.getElementById('createJobForm')?.addEventListener('submit', async function(e) {
                         e.preventDefault();
-                        closeModal('createJobModal');
-                        handleFormSubmit('{{ route('jobs.store') }}', new FormData(this));
-                        this.reset();
+                        const result = await handleFormSubmit('{{ route('jobs.store') }}', new FormData(this));
+                        if (result) {
+                            closeModal('createJobModal');
+                            this.reset();
+                        }
                     });
 
-                    document.getElementById('moveStageForm')?.addEventListener('submit', function(e) {
+                    document.getElementById('moveStageForm')?.addEventListener('submit', async function(e) {
                         e.preventDefault();
                         const jobId = this.querySelector('#move_job_id').value;
-                        closeModal('moveStageModal');
-                        handleFormSubmit(`/jobs/${jobId}/change-status`, new FormData(this));
-                        this.reset();
+                        const formData = new FormData(this);
+                        formData.set('_method', 'PATCH');
+                        const result = await handleFormSubmit(`/jobs/${jobId}/change-status`, formData);
+                        if (result) {
+                            closeModal('moveStageModal');
+                            this.reset();
+                        }
                     });
 
-                    document.getElementById('forwardJobForm')?.addEventListener('submit', function(e) {
+                    document.getElementById('forwardJobForm')?.addEventListener('submit', async function(e) {
                         e.preventDefault();
                         const jobId = this.querySelector('#forward_job_id').value;
-                        closeModal('forwardJobModal');
-                        handleFormSubmit(`/jobs/${jobId}/forward`, new FormData(this));
-                        this.reset();
+                        const result = await handleFormSubmit(`/jobs/${jobId}/forward`, new FormData(this));
+                        if (result) {
+                            closeModal('forwardJobModal');
+                            this.reset();
+                        }
                     });
 
-                    document.getElementById('completeJobForm')?.addEventListener('submit', function(e) {
+                    document.getElementById('completeJobForm')?.addEventListener('submit', async function(e) {
                         e.preventDefault();
                         const jobId = this.querySelector('#complete_job_id').value;
                         const formData = new FormData(this);
-                        formData.append('_method', 'PATCH');
-                        closeModal('completeJobModal');
-                        handleFormSubmit(`/jobs/${jobId}/complete`, formData);
-                        this.reset();
+                        formData.set('_method', 'PATCH');
+                        const result = await handleFormSubmit(`/jobs/${jobId}/complete`, formData);
+                        if (result) {
+                            closeModal('completeJobModal');
+                            this.reset();
+                        }
                     });
 
-                    document.getElementById('closeJobForm')?.addEventListener('submit', function(e) {
+                    document.getElementById('closeJobForm')?.addEventListener('submit', async function(e) {
                         e.preventDefault();
                         const jobId = this.querySelector('#close_job_id').value;
-                        const formData = new FormData(this);
-
-                        // Kirim sebagai POST murni (karena Route Anda adalah Route::post)
-                        closeModal('closeJobModal');
-                        handleFormSubmit(`/jobs/${jobId}/close`, formData);
-                        this.reset();
+                        const result = await handleFormSubmit(`/jobs/${jobId}/close`, new FormData(this));
+                        if (result) {
+                            closeModal('closeJobModal');
+                            this.reset();
+                        }
                     });
 
-                    document.getElementById('cancelJobForm')?.addEventListener('submit', function(e) {
+                    document.getElementById('cancelJobForm')?.addEventListener('submit', async function(e) {
                         e.preventDefault();
                         const jobId = this.querySelector('#cancel_job_id').value;
-                        const modal = document.getElementById('cancelJobModal');
-
-                        modal.classList.add('hidden');
-                        const spinner = document.getElementById('global-spinner');
-                        spinner.classList.remove('hidden');
-
                         const formData = new FormData(this);
-
-                        fetch(`/jobs/${jobId}/cancel`, {
-                                method: 'POST',
-
-                                body: formData,
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                        .getAttribute('content'),
-                                    'Accept': 'application/json'
-                                }
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                                spinner.classList.add('hidden');
-                                if (data.job) {
-                                    Swal.fire({
-                                        toast: true,
-                                        position: 'top-end',
-                                        icon: 'success',
-                                        title: data.message,
-                                        showConfirmButton: false,
-                                        timer: 3000
-                                    });
-
-                                    const card = document.getElementById(`job-card-${data.job.id}`);
-                                    if (card) card.remove();
-                                } else {
-                                    Swal.fire('Error', data.message || 'Failed to cancel', 'error');
-                                }
-                            })
-                            .catch(err => {
-                                spinner.classList.add('hidden');
-                                console.error(err);
-                                Swal.fire('Error', 'Connection error', 'error');
-                            });
+                        formData.set('_method', 'PATCH');
+                        const result = await handleFormSubmit(`/jobs/${jobId}/cancel`, formData);
+                        if (result) {
+                            closeModal('cancelJobModal');
+                            this.reset();
+                            const card = document.getElementById(`job-card-${jobId}`);
+                            if (card) card.remove();
+                        }
                     });
-
                 });
             </script>
         @endpush

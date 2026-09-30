@@ -167,7 +167,7 @@
         display: none; /* Controlled via JS */
         align-items: center;
         justify-content: center;
-        z-index: 99999 !important;
+        z-index: 1040 !important;
     }
 
     .pl-modal-overlay.active,
@@ -177,6 +177,19 @@
         display: flex !important;
         opacity: 1 !important;
         visibility: visible !important;
+    }
+
+    /* Force SweetAlert2 (and legacy SweetAlert) to ALWAYS render above any modal overlay */
+    .swal2-container,
+    div.swal2-container,
+    div:where(.swal2-container),
+    .swal2-container.swal2-backdrop-show,
+    .swal2-container.swal2-shown,
+    body.swal2-shown .swal2-container,
+    .sweet-overlay,
+    .sweet-alert {
+        z-index: 2147483647 !important;
+        position: fixed !important;
     }
 
     .pl-modal-panel {
