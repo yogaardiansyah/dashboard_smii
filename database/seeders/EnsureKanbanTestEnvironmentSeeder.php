@@ -58,7 +58,7 @@ class EnsureKanbanTestEnvironmentSeeder extends Seeder
 
         // 5. Test Users in mysql
         $superAdmin = User::updateOrCreate(
-            ['email' => 'superadmin@gmail.com'],
+            ['email' => 'superadmin@test.local'],
             [
                 'name' => 'Super Admin',
                 'username' => 'super',

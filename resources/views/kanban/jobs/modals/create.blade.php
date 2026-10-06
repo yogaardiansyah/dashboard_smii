@@ -1,52 +1,33 @@
 <div id="createJobModal"
-    class="hidden fixed inset-0 z-[1050] overflow-y-auto bg-slate-950/75 backdrop-blur-md transition-all duration-200 flex items-center justify-center p-3 sm:p-5" style="z-index: 1050;">
-    <div class="relative w-full max-w-3xl mx-auto my-auto max-h-[90vh] rounded-2xl bg-white dark:bg-[#111827] border border-slate-200/90 dark:border-slate-800 shadow-2xl transition-all overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-150">
+    class="pl-modal-overlay hidden" style="z-index: 1050;">
+    <div class="pl-modal-panel pl-modal-panel-xl mx-auto my-auto max-h-[90vh]">
 
-        <!-- Header Modal (Unified ERP Style) -->
-        <div class="px-6 py-4 bg-slate-50/95 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800 flex justify-between items-center flex-shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-lg flex-shrink-0 shadow-sm kanban-modal-icon">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">Buat Job Kanban Baru</h3>
-                        <span class="bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800/80 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                            Need Review Default
-                        </span>
-                    </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Tambahkan tiket pekerjaan baru dan cari item dari inventory SMII.
-                    </p>
-                </div>
+        <!-- Header Modal (Manage Areas Theme) -->
+        <div class="pl-modal-header">
+            <div>
+                <span class="pl-hero-kicker" style="margin-bottom: 2px; color: rgba(255,255,255,0.7); font-size: 11px;">Need Review Default</span>
+                <h3 class="pl-modal-title">Buat Job Kanban Baru</h3>
             </div>
-            <button type="button" onclick="closeCreateJobModal()"
-                class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
+            <button type="button" class="pl-modal-close" data-close-modal="createJobModal" onclick="closeCreateJobModal()" aria-label="Close">&times;</button>
         </div>
 
         <form id="createJobForm" class="flex flex-col flex-1 min-h-0 overflow-hidden" enctype="multipart/form-data">
-            <div class="p-6 space-y-4 flex-1 overflow-y-auto min-h-0 custom-scrollbar text-slate-800 dark:text-slate-200">
+            <div class="pl-modal-body bg-slate-50 dark:bg-slate-900 space-y-4">
                 @csrf
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Area Lokasi <span class="text-red-500">*</span></label>
-                        <select name="area_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-white text-xs" required>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="form-group-custom">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Area Lokasi <span class="text-red-500">*</span></label>
+                        <select name="area_id" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm outline-none" required>
                             <option value="" disabled selected>Pilih Area</option>
                             @foreach($areas as $id => $name)
                                 <option value="{{ $id }}">{{ $name }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Departemen Tujuan <span class="text-red-500">*</span></label>
-                        <select name="to_department_id" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-white text-xs" required>
+                    <div class="form-group-custom">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Departemen Tujuan <span class="text-red-500">*</span></label>
+                        <select name="to_department_id" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm outline-none" required>
                             <option value="" disabled selected>Pilih Departemen</option>
                             @foreach($departments as $id => $name)
                                 <option value="{{ $id }}">{{ $name }}</option>
@@ -55,35 +36,33 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Ringkasan Pekerjaan (Job Title) <span class="text-red-500">*</span></label>
-                    <input type="text" name="list_job" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-white text-xs" required placeholder="Contoh: Pengambilan Minyak Palm Oil & Refined Oil Batch 3">
+                <div class="form-group-custom">
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Ringkasan Pekerjaan (Job Title) <span class="text-red-500">*</span></label>
+                    <input type="text" name="list_job" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm outline-none" required placeholder="Contoh: Pengambilan Minyak Palm Oil & Refined Oil Batch 3">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Alasan Pekerjaan (Reason)</label>
-                        <textarea name="reason_description" rows="2" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-white text-xs" placeholder="Penjelasan kebutuhan atau latar belakang..."></textarea>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="form-group-custom">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Alasan Pekerjaan (Reason)</label>
+                        <textarea name="reason_description" rows="2" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm outline-none placeholder:text-slate-400" placeholder="Penjelasan kebutuhan atau latar belakang..."></textarea>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Catatan Khusus (Remark)</label>
-                        <textarea name="remark" rows="2" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-white text-xs" placeholder="Catatan penting atau instruksi khusus..."></textarea>
+                    <div class="form-group-custom">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Catatan Khusus (Remark)</label>
+                        <textarea name="remark" rows="2" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm outline-none placeholder:text-slate-400" placeholder="Catatan penting atau instruksi khusus..."></textarea>
                     </div>
                 </div>
 
                 <!-- Bagian Item Pekerjaan & Pencarian Database Utama -->
-                <div class="border border-blue-200 dark:border-gray-600 rounded-lg p-3.5 bg-blue-50/40 dark:bg-gray-700/40 space-y-3">
-                    <div class="flex justify-between items-center">
+                <div class="border border-blue-200 dark:border-slate-700 rounded-2xl p-4 bg-blue-50/40 dark:bg-slate-800/60 space-y-3">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                         <div>
-                            <label class="block text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                </svg>
+                            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-boxes-stacked text-blue-600 dark:text-blue-400"></i>
                                 <span>Rincian Item Pekerjaan & Lot</span>
                             </label>
-                            <span class="text-[11px] text-gray-500 dark:text-gray-400">Cari item & lot dari inventory atau tambahkan manual. Mendukung multi-lot per item.</span>
+                            <span class="text-[11px] text-slate-500 dark:text-slate-400">Cari item & lot dari inventory atau tambahkan manual. Mendukung multi-lot per item.</span>
                         </div>
-                        <button type="button" id="addManualItemBtn" class="text-xs font-semibold text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white border border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-700 px-2.5 py-1 rounded shadow-sm flex items-center gap-1">
+                        <button type="button" id="addManualItemBtn" class="pl-btn pl-btn-neutral text-xs py-1 px-3 shadow-sm hover:shadow transition flex items-center gap-1">
                             <span>+ Tambah Manual</span>
                         </button>
                     </div>
@@ -92,7 +71,7 @@
                     <div class="relative">
                         <div class="relative">
                             <input type="text" id="kanbanItemSearchInput" autocomplete="off"
-                                class="w-full text-xs rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white pl-8 pr-8 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                class="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white pl-8 pr-8 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500 outline-none"
                                 placeholder="🔍 Ketik kode (pt_part), deskripsi, atau no. lot (contoh: 0TA344, IUJ608, 2519A0007)...">
                             <span id="searchSpinner" class="hidden absolute right-2.5 top-2.5">
                                 <svg class="animate-spin h-3.5 w-3.5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -141,42 +120,37 @@
                 </div>
 
                 <!-- Tanggal Mulai & Deadline (Opsional) -->
-                <div class="border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/20 rounded-md p-3">
+                <div class="border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-900/20 rounded-2xl p-4">
                     <p class="text-[11px] text-purple-900 dark:text-purple-300 mb-2 font-medium flex items-center gap-1">
                         <span>💡</span>
                         <span><em>Tips: Semua Job baru otomatis masuk ke antrean <strong>Need Review</strong> untuk diverifikasi sebelum dijadwalkan oleh PPIC.</em></span>
                     </p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Tanggal Mulai (Opsional)</label>
-                            <input type="date" name="start_date" id="createStartDate" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-white text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="form-group-custom">
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tanggal Mulai (Opsional)</label>
+                            <input type="date" name="start_date" id="createStartDate" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm outline-none">
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Deadline (Opsional)</label>
-                            <input type="date" name="deadline" id="createDeadline" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-white text-xs">
+                        <div class="form-group-custom">
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Deadline (Opsional)</label>
+                            <input type="date" name="deadline" id="createDeadline" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs px-3.5 py-2.5 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition shadow-sm outline-none">
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300">Lampiran / Attachments (Opsional, Max 3 File)</label>
-                    <input type="file" name="attachments[]" class="block w-full text-xs text-gray-500 mt-1" multiple>
+                <div class="form-group-custom">
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Lampiran / Attachments (Opsional, Max 3 File)</label>
+                    <input type="file" name="attachments[]" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 dark:file:bg-blue-950/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 transition" multiple>
                 </div>
 
             </div>
 
-            <!-- Footer Action Bar (Unified ERP Style) -->
-            <div class="px-6 py-4 bg-slate-50/95 dark:bg-slate-900/80 border-t border-slate-200/80 dark:border-slate-800 flex justify-end items-center gap-2.5 flex-shrink-0">
-                <button type="button" onclick="closeCreateJobModal()"
-                    class="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl transition shadow-sm">
+            <!-- Footer Action Bar (Manage Areas Theme) -->
+            <div class="pl-modal-footer">
+                <button type="button" class="pl-btn pl-btn-neutral" data-close-modal="createJobModal" onclick="closeCreateJobModal()">
                     Batal
                 </button>
-                <button type="submit"
-                    class="px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md hover:shadow-lg transition flex items-center gap-1.5">
-                    <span>Simpan Job</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
+                <button type="submit" class="pl-btn pl-btn-primary">
+                    <i class="fa-solid fa-check mr-1.5"></i> Simpan Job
                 </button>
             </div>
         </form>

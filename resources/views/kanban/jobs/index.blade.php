@@ -30,19 +30,17 @@
 
                         <!-- Button Quick Scroll to Archive -->
                         <button id="toggleArchiveScrollBtn" type="button"
-                            class="text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-full shadow-sm hover:shadow transition flex items-center gap-1.5 cursor-pointer">
+                            class="pl-btn pl-btn-sm pl-btn-neutral flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow transition">
                             <span>Geser ke Arsip Closed</span>
-                            <span class="text-xs">➔</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
                         </button>
                     </div>
 
                     <button id="openCreateJobModalBtn"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-md hover:shadow-lg transition text-xs flex items-center gap-2"
+                            class="pl-btn pl-btn-sm pl-btn-primary flex items-center gap-2"
                             @if($areas->isEmpty() || $departments->isEmpty()) disabled title="Cannot add job: Areas or Departments are not configured." @endif>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                        </svg>
-                        <span>+ Tambah Job Baru</span>
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Tambah Job Baru</span>
                     </button>
                 </div>
 
@@ -193,9 +191,22 @@
         </div>
     </div>
 
+    @include('layouts.partials.roleuser_styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     
     <style>
+        /* Pill Button Variants matching Manage Areas Theme */
+        .pl-btn-purple { background: #7c3aed !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25); }
+        .pl-btn-purple:hover { background: #6d28d9 !important; transform: translateY(-1px); }
+        .pl-btn-amber { background: #d97706 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.25); }
+        .pl-btn-amber:hover { background: #b45309 !important; transform: translateY(-1px); }
+        .pl-btn-emerald { background: #059669 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25); }
+        .pl-btn-emerald:hover { background: #047857 !important; transform: translateY(-1px); }
+        .pl-btn-rose { background: #e11d48 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25); }
+        .pl-btn-rose:hover { background: #be123c !important; transform: translateY(-1px); }
+        .pl-btn-slate { background: #334155 !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(51, 65, 85, 0.25); }
+        .pl-btn-slate:hover { background: #1e293b !important; transform: translateY(-1px); }
+
         /* Responsive 5-column board layout on desktop, horizontal scroll on mobile */
         .kanban-column-responsive {
             flex: 0 0 calc((100% - 3rem) / 5);
@@ -395,6 +406,7 @@
             const el = document.getElementById(id);
             if(el) {
                 el.classList.remove('hidden');
+                el.classList.add('active');
                 document.body.classList.add('overflow-hidden');
             }
         };
@@ -402,18 +414,29 @@
             const el = document.getElementById(id);
             if(el) {
                 el.classList.add('hidden');
-                const anyOpen = document.querySelectorAll('.fixed.z-50:not(.hidden)');
+                el.classList.remove('active');
+                const anyOpen = document.querySelectorAll('.pl-modal-overlay:not(.hidden), .fixed.z-50:not(.hidden), [id$="Modal"]:not(.hidden)');
                 if(anyOpen.length === 0) {
                     document.body.classList.remove('overflow-hidden');
                 }
             }
         };
 
+        // Universal close modal on [data-close-modal] click
+        $(document).on('click', '[data-close-modal]', function(e) {
+            e.preventDefault();
+            const modalId = $(this).attr('data-close-modal');
+            if (modalId) {
+                closeModal(modalId);
+            }
+        });
+
         // Close modal on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.fixed.z-50:not(.hidden)').forEach(modal => {
+                document.querySelectorAll('.pl-modal-overlay:not(.hidden), [id$="Modal"]:not(.hidden)').forEach(modal => {
                     modal.classList.add('hidden');
+                    modal.classList.remove('active');
                 });
                 document.body.classList.remove('overflow-hidden');
             }

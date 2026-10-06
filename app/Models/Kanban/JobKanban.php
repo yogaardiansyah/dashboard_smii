@@ -50,15 +50,11 @@ class JobKanban extends Model
     public static function generateJobId(): string
     {
         $date = Carbon::now();
-        $year = $date->format('y');
-        $month = $date->format('m');
-        $day = $date->format('d');
+        $prefix = sprintf('KANBAN-%s%s%s-', $date->format('y'), $date->format('m'), $date->format('d'));
 
-        $latestJob = self::whereYear('created_at', $date->year)
-            ->whereMonth('created_at', $date->month)
-            ->whereDay('created_at', $date->day)
+        $latestJob = self::where('id_job', 'like', "{$prefix}%")
             ->whereNull('parent_id')
-            ->latest('id')
+            ->orderBy('id_job', 'desc')
             ->first();
 
         $sequence = 1;
@@ -66,7 +62,15 @@ class JobKanban extends Model
             $sequence = ((int)$matches[1]) + 1;
         }
 
-        return sprintf('KANBAN-%s%s%s-%04d', $year, $month, $day, $sequence);
+        do {
+            $candidateId = sprintf('%s%04d', $prefix, $sequence);
+            $exists = self::where('id_job', $candidateId)->exists();
+            if ($exists) {
+                $sequence++;
+            }
+        } while ($exists);
+
+        return $candidateId;
     }
 
     /**

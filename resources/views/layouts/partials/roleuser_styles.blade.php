@@ -88,6 +88,85 @@
         background: #cbd5e1;
     }
 
+    /* Button sizing variations for compact UI like Kanban cards and modals */
+    .pl-btn-sm {
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 999px;
+    }
+
+    .pl-btn-xs {
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.25;
+        border-radius: 999px;
+    }
+
+    .pl-btn-card {
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        line-height: 1.25 !important;
+        border-radius: 999px !important;
+        letter-spacing: 0.01em;
+    }
+
+    /* Additional color variants */
+    .pl-btn-purple {
+        background: #7c3aed;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+    }
+    .pl-btn-purple:hover {
+        background: #6d28d9;
+    }
+    .pl-btn-amber {
+        background: #d97706;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+    }
+    .pl-btn-amber:hover {
+        background: #b45309;
+    }
+    .pl-btn-emerald {
+        background: #059669;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+    }
+    .pl-btn-emerald:hover {
+        background: #047857;
+    }
+    .pl-btn-rose {
+        background: #e11d48;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
+    }
+    .pl-btn-rose:hover {
+        background: #be123c;
+    }
+    .pl-btn-slate {
+        background: #475569;
+        color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(71, 85, 105, 0.2);
+    }
+    .pl-btn-slate:hover {
+        background: #334155;
+    }
+
+    /* Modal footer button proportions */
+    .pl-modal-panel .pl-btn {
+        padding: 7px 18px;
+        font-size: 13px;
+    }
+
+    .pl-modal-panel .pl-btn.pl-btn-card,
+    .pl-modal-panel .pl-btn.pl-btn-xs {
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+    }
+
     .pl-card {
         border: 1px solid #dbe5f0;
         border-radius: 20px !important;
@@ -172,6 +251,7 @@
 
     .pl-modal-overlay.active,
     .pl-modal-overlay.show,
+    .pl-modal-overlay:not(.hidden),
     .pl-modal-overlay[style*="display: flex"],
     .pl-modal-overlay[style*="display: block"] {
         display: flex !important;
@@ -206,8 +286,17 @@
         animation: modalFadeIn 0.3s ease-out;
     }
 
+    .pl-modal-panel-md {
+        max-width: 620px;
+    }
+
     .pl-modal-panel-lg {
-        max-width: 800px;
+        max-width: 820px;
+    }
+
+    .pl-modal-panel-xl {
+        max-width: 1080px;
+        width: 95vw;
     }
 
     .pl-modal-panel form {

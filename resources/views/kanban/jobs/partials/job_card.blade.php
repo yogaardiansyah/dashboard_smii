@@ -194,9 +194,9 @@
     <!-- Footer & Aksi Card -->
     <div class="p-2.5 {{ $headerColor }} flex flex-col gap-2 rounded-b-2xl text-white">
         <div class="flex justify-between items-center">
-            <button type="button" class="show-detail-btn text-white/90 hover:text-white text-[11px] font-medium underline flex items-center gap-1 transition"
+            <button type="button" class="show-detail-btn pl-btn pl-btn-card pl-btn-neutral flex items-center gap-1.5 shadow-sm hover:shadow transition"
                 data-job-id="{{ $job->id }}">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                 </svg>
@@ -205,7 +205,7 @@
 
             @if($isRequester && !in_array($job->status, ['completed', 'closed', 'cancelled']))
                 <button
-                    class="cancel-job-btn bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow transition"
+                    class="cancel-job-btn pl-btn pl-btn-card pl-btn-rose shadow-sm hover:shadow transition"
                     data-job-id="{{ $job->id }}">
                     Cancel
                 </button>
@@ -219,7 +219,7 @@
             @if($job->status === 'need_review')
                 @if(!$job->isFromApi() || $isQa || $isSuperAdmin)
                     <button type="button"
-                        class="agree-review-btn bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition flex items-center gap-1"
+                        class="agree-review-btn pl-btn pl-btn-card pl-btn-purple shadow-sm hover:shadow transition flex items-center gap-1"
                         data-job-id="{{ $job->id }}"
                         data-id-job="{{ $job->id_job }}"
                         data-area-id="{{ $job->area_id }}"
@@ -229,7 +229,7 @@
                         🔍 Review / Setujui (QA)
                     </button>
                 @else
-                    <span class="bg-white/20 text-white text-[10px] font-bold px-2 py-1 rounded-lg" title="Hanya tim QA yang berhak mereview data dari API">
+                    <span class="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" title="Hanya tim QA yang berhak mereview data dari API">
                         Menunggu Review QA
                     </span>
                 @endif
@@ -238,7 +238,7 @@
             @elseif($job->status === 'to_be_scheduled' || $job->status === 'on_hold')
                 @if($isPpic || $isSuperAdmin)
                     <button type="button"
-                        class="set-schedule-btn bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition flex items-center gap-1"
+                        class="set-schedule-btn pl-btn pl-btn-card pl-btn-amber shadow-sm hover:shadow transition flex items-center gap-1"
                         data-job-id="{{ $job->id }}"
                         data-id-job="{{ $job->id_job }}"
                         data-start-date="{{ $job->tanggal_job_mulai ? $job->tanggal_job_mulai->format('Y-m-d') : date('Y-m-d') }}"
@@ -246,7 +246,7 @@
                         📅 Atur Jadwal (PPIC)
                     </button>
                 @else
-                    <span class="bg-white/20 text-white text-[10px] font-bold px-2 py-1 rounded-lg" title="Hanya tim PPIC yang berhak mengatur jadwal">
+                    <span class="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" title="Hanya tim PPIC yang berhak mengatur jadwal">
                         Menunggu Penjadwalan PPIC
                     </span>
                 @endif
@@ -254,13 +254,13 @@
             {{-- 3. Status: SCHEDULED --}}
             @elseif($job->status === 'scheduled')
                 <button type="button"
-                    class="re-review-btn bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-medium px-2.5 py-1.5 rounded-xl shadow transition"
+                    class="re-review-btn pl-btn pl-btn-card pl-btn-slate shadow-sm hover:shadow transition"
                     data-job-id="{{ $job->id }}" data-id-job="{{ $job->id_job }}" title="Mundurkan tiket ke Need Review">
                     ↺ Tinjau Ulang
                 </button>
                 @if($canAct || $isPpic || $isSuperAdmin)
                     <button
-                        class="move-stage-btn bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition"
+                        class="move-stage-btn pl-btn pl-btn-card pl-btn-emerald shadow-sm hover:shadow transition"
                         data-job-id="{{ $job->id }}" data-target-status="on_going" data-title="Mulai Pengerjaan Fisik (On Going)">
                         Mulai Job ➔
                     </button>
@@ -270,7 +270,7 @@
             @elseif($job->status === 'preparation')
                 @if($canAct || $isSuperAdmin)
                     <button
-                        class="move-stage-btn bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition"
+                        class="move-stage-btn pl-btn pl-btn-card pl-btn-emerald shadow-sm hover:shadow transition"
                         data-job-id="{{ $job->id }}" data-target-status="on_going" data-title="Mulai Pengerjaan Fisik (On Going)">
                         Mulai Job ➔
                     </button>
@@ -279,14 +279,14 @@
             {{-- 5. Status: ON GOING --}}
             @elseif($job->status === 'on_going')
                 <button type="button"
-                    class="toggle-issue-btn {{ $job->has_issue ? 'bg-red-800 text-white' : 'bg-rose-500 hover:bg-rose-600 text-white' }} text-[11px] font-bold px-2.5 py-1.5 rounded-xl shadow transition"
+                    class="toggle-issue-btn pl-btn pl-btn-card {{ $job->has_issue ? 'bg-red-800 text-white' : 'pl-btn-rose' }} shadow-sm hover:shadow transition"
                     data-job-id="{{ $job->id }}" data-id-job="{{ $job->id_job }}" data-has-issue="{{ $job->has_issue ? '1' : '0' }}" data-issue-note="{{ $job->issue_note }}">
                     {{ $job->has_issue ? '⚠️ Edit Kendala' : '⚠️ Kendala' }}
                 </button>
 
                 @if($job->items->where('is_completed', false)->count() > 0)
                     <button type="button"
-                        class="split-job-btn bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl shadow transition"
+                        class="split-job-btn pl-btn pl-btn-card pl-btn-amber shadow-sm hover:shadow transition"
                         data-job-id="{{ $job->id }}" data-id-job="{{ $job->id_job }}">
                         ✂ Pecah Job
                     </button>
@@ -294,12 +294,12 @@
 
                 @if($canAct)
                     <button
-                        class="forward-job-btn bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-xl shadow transition"
+                        class="forward-job-btn pl-btn pl-btn-card pl-btn-amber shadow-sm hover:shadow transition"
                         data-job-id="{{ $job->id }}">
                         Forward
                     </button>
                     <button
-                        class="complete-job-btn bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition"
+                        class="complete-job-btn pl-btn pl-btn-card pl-btn-emerald shadow-sm hover:shadow transition"
                         data-job-id="{{ $job->id }}">
                         Selesai
                     </button>
@@ -309,12 +309,12 @@
             @elseif($job->status === 'completed')
                 @if($canClose)
                     <button
-                        class="close-job-btn bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition"
+                        class="close-job-btn pl-btn pl-btn-card pl-btn-primary shadow-sm hover:shadow transition"
                         data-job-id="{{ $job->id }}">
                         Tutup & Arsipkan
                     </button>
                 @else
-                    <span class="bg-white/20 text-white text-[10px] font-bold px-2.5 py-1 rounded-xl" title="Menunggu ditutup oleh requester terakhir: {{ $lastRequester?->name ?? 'Pengaju' }}">
+                    <span class="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" title="Menunggu ditutup oleh requester terakhir: {{ $lastRequester?->name ?? 'Pengaju' }}">
                         🔒 Menunggu Ditutup Pengaju
                     </span>
                 @endif

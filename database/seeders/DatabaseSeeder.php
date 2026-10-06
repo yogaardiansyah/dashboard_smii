@@ -147,12 +147,12 @@ class DatabaseSeeder extends Seeder
         // Let's Create User and assign Role to it.
 
         $superAdminUser = User::firstOrCreate([
-                    'email' => 'superadmin@gmail.com',
+                    'email' => 'superadmin@test.local',
                 ], [
                     'name' => 'Super Admin',
                     'username' => 'super',
                     'nik' => 'AG1111',
-                    'email' => 'superadmin@gmail.com',
+                    'email' => 'superadmin@test.local',
                     'password' => Hash::make ('password'),
                     'email_verified_at' => now(),
                     'position_id' => 1,
@@ -163,12 +163,12 @@ class DatabaseSeeder extends Seeder
 
 
         $adminUser = User::firstOrCreate([
-                            'email' => 'admin@gmail.com'
+                            'email' => 'admin@test.local'
                         ], [
                             'name' => 'Admin',
                             'username' => 'admin',
                             'nik' => 'AG2222',
-                            'email' => 'admin@gmail.com',
+                            'email' => 'admin@test.local',
                             'password' => Hash::make ('password'),
                             'email_verified_at' => now(),
                             'position_id' => 3,
@@ -179,12 +179,12 @@ class DatabaseSeeder extends Seeder
 
 
         $staffUser = User::firstOrCreate([
-                            'email' => 'staff@gmail.com',
+                            'email' => 'staff@test.local',
                         ], [
                             'name' => 'Staff',
                             'username' => 'staff',
                             'nik' => 'AG3333',
-                            'email' => 'staff@gmail.com',
+                            'email' => 'staff@test.local',
                             'password' => Hash::make('password'),
                             'email_verified_at' => now(),
                             'position_id' => 3,
