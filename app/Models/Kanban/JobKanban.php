@@ -31,8 +31,9 @@ class JobKanban extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logFillable()
+            ->logUnguarded()
             ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
             ->useLogName('Kanban')
             ->setDescriptionForEvent(fn(string $eventName) => "Kanban Job '{$this->id_job}' has been {$eventName}");
     }
@@ -174,5 +175,37 @@ class JobKanban extends Model
 
         $completed = $this->items->where('is_completed', true)->count();
         return (int) round(($completed / $total) * 100);
+    }
+
+    public function isFromApi(): bool
+    {
+        return $this->source === 'api' || !empty($this->external_reference_id);
+    }
+
+    public function getLastRequester(): ?User
+    {
+        // Cari route terakhir yang merupakan transfer antar-departemen (forward)
+        $latestTransferRoute = $this->routes()
+            ->whereNotNull('from_department_id')
+            ->whereColumn('from_department_id', '!=', 'to_department_id')
+            ->latest('id')
+            ->first();
+
+        $userId = $latestTransferRoute?->created_by ?: $this->pengaju_id;
+        return $userId ? User::find($userId) : null;
+    }
+
+    public function canBeClosedBy(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        if ($user->isSuperAdmin() || $user->hasRole('super-admin')) {
+            return true;
+        }
+
+        $lastRequester = $this->getLastRequester();
+        return $lastRequester && (int) $user->id === (int) $lastRequester->id;
     }
 }

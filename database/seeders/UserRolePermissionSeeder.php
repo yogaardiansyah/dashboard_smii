@@ -70,6 +70,12 @@ class UserRolePermissionSeeder extends Seeder
          Permission::create(['name' => 'view dashboard QM & HSE']);
          Permission::create(['name' => 'view dashboard R&D']);
 
+         Permission::create(['name' => 'view kanban']);
+         Permission::create(['name' => 'create kanban']);
+         Permission::create(['name' => 'update kanban']);
+         Permission::create(['name' => 'delete kanban']);
+         Permission::create(['name' => 'view kanban dashboard']);
+
          //create departements
 
         Department::create(['department_name' => 'Engineering & Maintainance']);
@@ -127,6 +133,7 @@ class UserRolePermissionSeeder extends Seeder
         $adminRole->givePermissionTo(['create permission', 'view permission']);
         $adminRole->givePermissionTo(['create user', 'view user', 'update user']);
         $adminRole->givePermissionTo(['create product', 'view product', 'update product']);
+        $adminRole->givePermissionTo(['view kanban', 'create kanban', 'update kanban', 'view kanban dashboard']);
 
         $staffRole->givePermissionTo(['view dashboard Finance']);
         $userRole->givePermissionTo(['view dashboard Sales & Marketing']);

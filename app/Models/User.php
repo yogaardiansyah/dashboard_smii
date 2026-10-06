@@ -133,4 +133,55 @@ class User extends Authenticatable
     {
         return $this->hasOne(MarshoUser::class, 'user_id');
     }
+
+    public function kanbanProfile()
+    {
+        return $this->hasOne(\App\Models\Kanban\KanbanUser::class, 'user_id');
+    }
+
+    public function isQa(): bool
+    {
+        if ($this->isSuperAdmin() || $this->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($this->hasRole(['qa', 'QA', 'Quality Assurance'])) {
+            return true;
+        }
+
+        $kanbanDeptName = $this->kanbanProfile?->department?->department_name;
+        if ($kanbanDeptName && (str_contains(strtolower($kanbanDeptName), 'qualit') || str_contains(strtoupper($kanbanDeptName), 'QA'))) {
+            return true;
+        }
+
+        $mainDeptName = $this->department?->department_name;
+        if ($mainDeptName && (str_contains(strtolower($mainDeptName), 'qualit') || str_contains(strtoupper($mainDeptName), 'QM') || str_contains(strtoupper($mainDeptName), 'QA'))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isPpic(): bool
+    {
+        if ($this->isSuperAdmin() || $this->hasRole('super-admin')) {
+            return true;
+        }
+
+        if ($this->hasRole(['ppic', 'PPIC'])) {
+            return true;
+        }
+
+        $kanbanDeptName = $this->kanbanProfile?->department?->department_name;
+        if ($kanbanDeptName && str_contains(strtoupper($kanbanDeptName), 'PPIC')) {
+            return true;
+        }
+
+        $mainDeptName = $this->department?->department_name;
+        if ($mainDeptName && (str_contains(strtoupper($mainDeptName), 'PPIC') || str_contains(strtolower($mainDeptName), 'supply chain'))) {
+            return true;
+        }
+
+        return false;
+    }
 }

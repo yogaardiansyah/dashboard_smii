@@ -15,6 +15,7 @@ class KanbanItem extends Model
     protected $guarded = [];
 
     protected $casts = [
+        'qty' => 'integer',
         'is_completed' => 'boolean',
         'completed_at' => 'datetime',
     ];

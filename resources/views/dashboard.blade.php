@@ -849,6 +849,36 @@
                     </button>
                 </div>
             </div>
+
+            @canany(['view kanban dashboard', 'view kanban'])
+            <!-- 5. Kanban Board Card -->
+            <div class="dashboard-card"
+                style="--card-gradient: linear-gradient(90deg, #8b5cf6, #6366f1);
+                       --card-glow-shadow: rgba(139, 92, 246, 0.25);
+                       --icon-bg-hover: rgba(139, 92, 246, 0.15);
+                       --icon-border-hover: rgba(139, 92, 246, 0.4);
+                       --tag-bg-hover: rgba(139, 92, 246, 0.9);
+                       --btn-gradient: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);"
+                onclick="window.location.href='{{ route('kanban.jobs.index') }}'">
+                <div class="card-glow-bar"></div>
+                <div class="card-shimmer"></div>
+
+                <div class="card-header-badge">
+                    <div class="card-icon-wrapper">📋</div>
+                    <span class="tag-badge">Workflow</span>
+                </div>
+                <div class="card-body-content">
+                    <div class="card-title">Kanban Board</div>
+                    <div class="card-desc">Track job progress, cross-department workflows, and task operational status in real-time.</div>
+                </div>
+                <div class="card-footer-action">
+                    <button class="btn-glass-action">
+                        <span>Go Kanban</span>
+                        <i class="fa-solid fa-arrow-right btn-arrow"></i>
+                    </button>
+                </div>
+            </div>
+            @endcanany
         </div>
     </div>
 

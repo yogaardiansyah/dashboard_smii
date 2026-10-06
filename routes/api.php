@@ -23,4 +23,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Kanban External Integration (Inventory Oil, etc.)
+Route::post('/kanban/jobs/external', [\App\Http\Controllers\Kanban\JobController::class, 'storeExternalJob'])->name('api.kanban.jobs.external');
+
 

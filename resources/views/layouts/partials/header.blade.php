@@ -631,22 +631,28 @@
             const darkModeStorage = localStorage.getItem('darkMode');
             const body = document.body;
             const html = document.documentElement;
+            const toggleSwitch = document.getElementById('toggle_left_sidebar_skin');
 
             // Function to set dark mode
             const setDarkMode = (darkModeOn) => {
                 body.classList.toggle('dark-skin', darkModeOn);
                 body.classList.toggle('light-skin', !darkModeOn);
+                body.classList.toggle('dark', darkModeOn);
                 html.classList.toggle('dark', darkModeOn);
+                if (toggleSwitch) {
+                    toggleSwitch.checked = !!darkModeOn;
+                }
                 localStorage.setItem('darkMode', darkModeOn ? 'enabled' : 'disabled');
             };
 
             // Initialize dark mode based on stored preference
             if (darkModeStorage === 'enabled') {
                 setDarkMode(true);
+            } else if (darkModeStorage === 'disabled') {
+                setDarkMode(false);
             }
 
             // Toggle dark mode when toggle button is clicked
-            const toggleSwitch = document.getElementById('toggle_left_sidebar_skin');
             if (toggleSwitch) {
                 toggleSwitch.addEventListener('change', () => {
                     setDarkMode(toggleSwitch.checked);

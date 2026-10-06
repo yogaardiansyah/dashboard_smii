@@ -6,6 +6,7 @@ use App\Models\Kanban\JobKanban;
 use App\Models\Kanban\KanbanDepartment;
 use App\Models\Kanban\KanbanItem;
 use App\Models\Kanban\KanbanRoute;
+use App\Models\User;
 use App\Enums\Kanban\JobStatus;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -15,34 +16,41 @@ class CreateKanbanJobAction
 {
     public function execute(array $data, ?int $userId = null): JobKanban
     {
-        $userId = $userId ?: Auth::id();
+        $userId = $userId ?: Auth::id() ?: (User::first()?->id ?? 1);
         $jobIdString = JobKanban::generateJobId();
 
         // Status awal:
-        // Jika start_date tidak diisi -> on_hold
-        // Jika start_date diisi manual -> need_review (atau scheduled jika sudah lewat/hari ini)
+        // Default baru ke NEED_REVIEW
         $hasSchedule = !empty($data['start_date']) && !empty($data['deadline']);
-        $status = JobStatus::ON_HOLD;
+        $status = JobStatus::NEED_REVIEW;
 
-        if ($hasSchedule) {
+        if (!empty($data['status'])) {
+            $status = $data['status'];
+        } elseif ($hasSchedule) {
             $startDate = Carbon::parse($data['start_date']);
             $status = $startDate->isPast() || $startDate->isToday()
                 ? JobStatus::SCHEDULED
                 : JobStatus::NEED_REVIEW;
         }
 
-        return DB::connection('mysql_kanban')->transaction(function () use ($data, $userId, $jobIdString, $status, $hasSchedule) {
+        $source = $data['source'] ?? (!empty($data['external_reference_id']) ? 'api' : 'manual');
+
+        return DB::connection('mysql_kanban')->transaction(function () use ($data, $userId, $jobIdString, $status, $hasSchedule, $source) {
             $itemsData = $data['items'] ?? [];
-            $balance = isset($data['balance']) && $data['balance'] !== ''
+
+            // Hitung balance: jika balance eksplisit dikirim dari payload (misal jumlah lot), gunakan itu.
+            // Jika tidak, hitung total baris item/lot (count) sebagai unit beban kerja pekerjaan.
+            $balance = (isset($data['balance']) && $data['balance'] !== '' && $data['balance'] !== null)
                 ? (int) $data['balance']
                 : count($itemsData);
 
             $job = JobKanban::create([
                 'id_job' => $jobIdString,
                 'external_reference_id' => $data['external_reference_id'] ?? null,
-                'pengaju_id' => $userId,
+                'source' => $source,
+                'pengaju_id' => $userId ?: (User::first()?->id ?? 1),
                 'pic_id' => $data['pic_id'] ?? null,
-                'area_id' => $data['area_id'],
+                'area_id' => $data['area_id'] ?? null,
                 'list_job' => $data['list_job'],
                 'reason_description' => $data['reason_description'] ?? null,
                 'remark' => $data['remark'] ?? null,
@@ -53,16 +61,22 @@ class CreateKanbanJobAction
                 'last_stage_update' => Carbon::now(),
             ]);
 
-            // Insert Checklist Items
+            // Insert Checklist Items beserta kuantitas, unit & nomor lot (Multi-lot balance)
             if (!empty($itemsData)) {
                 foreach ($itemsData as $item) {
                     $itemName = is_array($item) ? ($item['item_name'] ?? '') : (string) $item;
                     $itemCode = is_array($item) ? ($item['item_code'] ?? null) : null;
+                    $lotNumber = is_array($item) ? ($item['lot_number'] ?? $item['lot'] ?? null) : null;
+                    $qty = is_array($item) ? (int) ($item['qty'] ?? 1) : 1;
+                    $unit = is_array($item) ? ($item['unit'] ?? null) : null;
 
                     if (!empty(trim($itemName))) {
                         $job->items()->create([
                             'item_code' => $itemCode,
                             'item_name' => trim($itemName),
+                            'lot_number' => $lotNumber ? trim($lotNumber) : null,
+                            'qty' => $qty > 0 ? $qty : 1,
+                            'unit' => $unit,
                             'is_completed' => false,
                         ]);
                     }

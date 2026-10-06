@@ -161,6 +161,7 @@ Route::middleware('auth', 'redirect.if.role')->group(function () {
     // ==========================================
     Route::prefix('kanban')->name('kanban.')->group(function () {
         // Kanban Board & Job Actions
+        Route::get('/items/search', [KanbanJobController::class, 'searchItems'])->name('items.search');
         Route::get('/jobs', [KanbanJobController::class, 'index'])->name('jobs.index');
         Route::post('/jobs', [KanbanJobController::class, 'store'])->name('jobs.store');
         Route::get('/jobs/{job}/details', [KanbanJobController::class, 'showDetails'])->name('jobs.details');
@@ -175,9 +176,9 @@ Route::middleware('auth', 'redirect.if.role')->group(function () {
         Route::match(['post', 'patch'], '/jobs/{job}/start', [KanbanJobController::class, 'start'])->name('jobs.start');
         Route::match(['post', 'patch'], '/jobs/{job}/change-status', [KanbanJobController::class, 'changeStatus'])->name('jobs.change-status');
         Route::post('/jobs/{job}/forward', [KanbanJobController::class, 'forward'])->name('jobs.forward');
-        Route::patch('/jobs/{job}/complete', [KanbanJobController::class, 'complete'])->name('jobs.complete');
-        Route::post('/jobs/{job}/close', [KanbanJobController::class, 'close'])->name('jobs.close');
-        Route::post('/jobs/{job}/cancel', [KanbanJobController::class, 'cancel'])->name('jobs.cancel');
+        Route::match(['post', 'patch'], '/jobs/{job}/complete', [KanbanJobController::class, 'complete'])->name('jobs.complete');
+        Route::match(['post', 'patch'], '/jobs/{job}/close', [KanbanJobController::class, 'close'])->name('jobs.close');
+        Route::match(['post', 'patch'], '/jobs/{job}/cancel', [KanbanJobController::class, 'cancel'])->name('jobs.cancel');
 
         // Kanban Areas
         Route::get('/areas', [KanbanAreaController::class, 'index'])->name('areas.index');

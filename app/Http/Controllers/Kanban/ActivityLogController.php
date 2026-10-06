@@ -6,34 +6,44 @@ use App\Http\Controllers\Controller;
 use App\Models\Kanban\JobKanban;
 use App\Models\Kanban\KanbanActivityLog;
 use App\Models\User;
+use App\Traits\ConditionQueryTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\Facades\DataTables;
 
 class ActivityLogController extends Controller
 {
+    use ConditionQueryTrait;
+
     /**
-     * Menampilkan halaman utama log aktivitas dengan filter.
+     * Display Kanban activity logs with SearchBuilder & Yajra DataTables.
      */
-    public function index(Request $request)
+    public function index(Request $request): mixed
     {
         $user = Auth::user();
 
         $query = KanbanActivityLog::with([
             'causer',
-            'subject'
+            'subject',
         ]);
 
-        // Hanya tampilkan log yang subject-nya adalah JobKanban
         $query->where('subject_type', JobKanban::class);
 
-        // Batasan hak akses
-        if (!$user->isSuperAdmin()) {
+        // Access control: non super-admins / non-auditor only see logs of jobs they requested
+        $isPrivileged = $user && (
+            (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) ||
+            (method_exists($user, 'hasRole') && $user->hasRole('super-admin')) ||
+            (method_exists($user, 'isQa') && $user->isQa()) ||
+            (method_exists($user, 'isPpic') && $user->isPpic()) ||
+            (method_exists($user, 'can') && $user->can('view-kanban-activity-logs'))
+        );
+
+        if (!$isPrivileged && $user) {
             $query->whereHasMorph('subject', [JobKanban::class], function ($jobQuery) use ($user) {
                 $jobQuery->where('pengaju_id', $user->id);
             });
         }
 
-        // Filter dinamis
         if ($request->filled('subject_filter')) {
             $jobId = $request->input('subject_filter');
             $query->whereHasMorph('subject', [JobKanban::class], function ($jobQuery) use ($jobId) {
@@ -57,39 +67,124 @@ class ActivityLogController extends Controller
         }
 
         $filterQuery = clone $query;
-
         $causerIds = $filterQuery->pluck('causer_id')->unique()->filter();
         $users = User::whereIn('id', $causerIds)->orderBy('name')->pluck('name', 'id');
-
         $eventNames = $filterQuery->select('event')->distinct()->pluck('event');
 
-        $activities = $query->latest()->paginate(20)->withQueryString();
+        if ($request->ajax()) {
+            $searchBuilder = $request->input('searchBuilder.criteria', []);
+            $searchLogic = strtolower($request->input('searchBuilder.logic', 'and'));
 
-        return view('kanban.activity-logs.index', compact('activities', 'users', 'eventNames', 'request'));
+            if (!empty($searchBuilder)) {
+                $query->where(function ($q) use ($searchBuilder, $searchLogic) {
+                    foreach ($searchBuilder as $filter) {
+                        $column = $filter['origData'] ?? $filter['data'] ?? null;
+                        $condition = $filter['condition'] ?? '=';
+                        $values = is_array($filter['value']) ? $filter['value'] : (isset($filter['value']) ? [$filter['value']] : []);
+                        $value = $values[0] ?? null;
+
+                        if (!$column) continue;
+
+                        $callback = function ($subQuery) use ($column, $condition, $value, $values) {
+                            if (in_array($column, ['job_id', 'id_job', 'subject.id_job'])) {
+                                $subQuery->whereHasMorph('subject', [JobKanban::class], function ($jobQ) use ($condition, $value, $values) {
+                                    $this->applyCondition($jobQ, 'id_job', $condition, $value, $values, false);
+                                });
+                            } elseif (in_array($column, ['causer', 'causer.name', 'causer_id', 'performed_by'])) {
+                                if ($column === 'causer' || $column === 'causer.name' || $column === 'performed_by') {
+                                    $subQuery->whereHas('causer', function ($u) use ($condition, $value, $values) {
+                                        $this->applyCondition($u, 'name', $condition, $value, $values, false);
+                                    });
+                                } else {
+                                    $this->applyCondition($subQuery, 'causer_id', $condition, $value, $values, false);
+                                }
+                            } elseif (in_array($column, ['created_at', 'time'])) {
+                                $this->applyCondition($subQuery, 'created_at', $condition, $value, $values, true);
+                            } else {
+                                $this->applyCondition($subQuery, $column, $condition, $value, $values, false);
+                            }
+                        };
+
+                        if ($searchLogic === 'or') {
+                            $q->orWhere(function ($sub) use ($callback) { $callback($sub); });
+                        } else {
+                            $q->where(function ($sub) use ($callback) { $callback($sub); });
+                        }
+                    }
+                });
+            }
+
+            return DataTables::of($query->latest())
+                ->addColumn('job_id', function ($row) {
+                    return optional($row->subject)->id_job ? '<span class="font-bold text-slate-800">' . optional($row->subject)->id_job . '</span>' : '-';
+                })
+                ->addColumn('requester', function ($row) {
+                    return optional(optional($row->subject)->pengaju)->name ?? '-';
+                })
+                ->addColumn('area', function ($row) {
+                    return optional(optional($row->subject)->area)->name ?? '-';
+                })
+                ->addColumn('event_badge', function ($row) {
+                    $event = strtolower($row->event ?? 'info');
+                    $bgColor = match ($event) {
+                        'created' => 'background-color: #10b981;', // green
+                        'updated' => 'background-color: #3b82f6;', // blue
+                        'deleted' => 'background-color: #ef4444;', // red
+                        'forwarded' => 'background-color: #f59e0b;', // amber
+                        'completed' => 'background-color: #059669;', // dark green
+                        'cancelled' => 'background-color: #64748b;', // slate
+                        default => 'background-color: #6366f1;',   // indigo
+                    };
+                    return '<span class="badge text-white px-2 py-1 rounded capitalize" style="' . $bgColor . '">' . e($row->event) . '</span>';
+                })
+                ->addColumn('performed_by', function ($row) {
+                    return optional($row->causer)->name ?? 'System';
+                })
+                ->addColumn('time', function ($row) {
+                    return $row->created_at ? $row->created_at->format('d M Y, H:i:s') : '-';
+                })
+                ->addColumn('actions', function ($row) {
+                    $props = json_encode($row->properties ? $row->properties->toArray() : new \stdClass());
+                    $detailBtn = '<button type="button" class="pl-icon-btn pl-icon-btn-view view-detail-btn" data-bs-toggle="tooltip" title="View Activity Detail" '
+                        . 'data-id="' . $row->id . '" '
+                        . 'data-job="' . e(optional($row->subject)->id_job ?? '-') . '" '
+                        . 'data-event="' . e($row->event) . '" '
+                        . 'data-desc="' . e($row->description) . '" '
+                        . 'data-causer="' . e(optional($row->causer)->name ?? 'System') . '" '
+                        . 'data-time="' . ($row->created_at ? $row->created_at->format('d M Y, H:i:s') : '-') . '" '
+                        . 'data-properties="' . e($props) . '">'
+                        . '<i class="fa-solid fa-eye"></i>'
+                        . '</button>';
+
+                    return '<div class="flex items-center justify-center gap-1.5">' . $detailBtn . '</div>';
+                })
+                ->rawColumns(['job_id', 'event_badge', 'actions'])
+                ->make(true);
+        }
+
+        return view('kanban.activity-logs.index', compact('users', 'eventNames'));
     }
 
     /**
-     * Menampilkan log aktivitas untuk satu Job spesifik.
+     * Display activity logs for a specific Job.
      */
-    public function showForJob(JobKanban $job)
+    public function showForJob(JobKanban $job): mixed
     {
         $user = Auth::user();
-        if (!$user->isSuperAdmin() && $job->pengaju_id !== $user->id) {
+        $isPrivileged = $user && (
+            (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin()) ||
+            (method_exists($user, 'hasRole') && $user->hasRole('super-admin')) ||
+            (method_exists($user, 'isQa') && $user->isQa()) ||
+            (method_exists($user, 'isPpic') && $user->isPpic()) ||
+            (method_exists($user, 'can') && $user->can('view-kanban-activity-logs'))
+        );
+
+        if (!$isPrivileged && $job->pengaju_id !== optional($user)->id) {
             abort(403, 'You are not authorized to view this page.');
         }
 
-        $activities = KanbanActivityLog::with(['causer'])
-            ->where('subject_type', JobKanban::class)
-            ->where('subject_id', $job->id)
-            ->latest()
-            ->paginate(20);
+        $activities = $job->activities()->with('causer')->latest()->paginate(15);
 
-        return view('kanban.activity-logs.index', [
-            'activities' => $activities,
-            'job' => $job,
-            'users' => collect(),
-            'eventNames' => collect(),
-            'request' => request()
-        ]);
+        return view('kanban.activity-logs.show', compact('job', 'activities'));
     }
 }

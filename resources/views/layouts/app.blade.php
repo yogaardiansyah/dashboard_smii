@@ -17,6 +17,11 @@
     <link rel="manifest" href="{{ asset('/manifest.json') }}"> --}}
     <link rel="icon" href="{{ url('assets/images/sinarmeadow.webp') }}">
 
+    <script>
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
     <title>{{ 'Operational Dashboard SMII' }} - @yield('title')</title>
     <!-- Fonts -->
     <link rel="stylesheet" href="{{ asset('assets/vendor-css/figtree.css') }}">

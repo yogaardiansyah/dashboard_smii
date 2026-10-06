@@ -35,9 +35,16 @@ class SendKanbanJobCompletedEmail implements ShouldQueue
      */
     public function handle()
     {
-        $requester = $this->jobKanban->pengaju;
-        if ($requester && $requester->email) {
-            Mail::to($requester->email)->send(new KanbanJobCompletedMail($this->jobKanban));
+        try {
+            $requester = $this->jobKanban->pengaju;
+            if ($requester && $requester->email) {
+                Mail::to($requester->email)->send(new KanbanJobCompletedMail($this->jobKanban));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Gagal mengirim email job completed ke pengaju: " . $e->getMessage(), [
+                'job_id' => $this->jobKanban->id,
+                'exception' => $e,
+            ]);
         }
     }
 }

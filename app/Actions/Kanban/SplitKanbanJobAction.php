@@ -27,6 +27,10 @@ class SplitKanbanJobAction
     ): array {
         $actionUserId = $actionUserId ?: Auth::id();
 
+        if (in_array($parentJob->status, [JobStatus::COMPLETED, JobStatus::CLOSED, JobStatus::CANCELLED])) {
+            throw new Exception("Pekerjaan yang sudah selesai, ditutup, atau dibatalkan tidak dapat di-split.");
+        }
+
         return DB::connection('mysql_kanban')->transaction(function () use (
             $parentJob,
             $targetDepartmentId,
@@ -47,10 +51,17 @@ class SplitKanbanJobAction
                 throw new Exception("Tidak ada item yang dapat di-split.");
             }
 
+            // Validasi: Jangan biarkan job induk kosong (0 item)
+            $remainingItems = $parentJob->items()->whereNotIn('id', $itemsToMove->pluck('id'))->get();
+            if ($remainingItems->isEmpty()) {
+                throw new Exception("Tidak dapat memindahkan seluruh item ke job anak. Setidaknya harus ada 1 item yang tersisa pada job induk.");
+            }
+
             // 2. Kalkulasi saldo dan penamaan
             $childIdJob = JobKanban::generateChildJobId($parentJob);
             $movedCount = $itemsToMove->count();
-            $remainingItemsCount = $parentJob->items()->whereNotIn('id', $itemsToMove->pluck('id'))->count();
+            $movedQtySum = $itemsToMove->sum(fn($i) => (int) ($i->qty ?: 1));
+            $remainingQtySum = $remainingItems->sum(fn($i) => (int) ($i->qty ?: 1));
 
             $childAreaId = $targetAreaId ?: $parentJob->area_id;
             $toDept = KanbanDepartment::find($targetDepartmentId);
@@ -64,12 +75,12 @@ class SplitKanbanJobAction
                 'pic_id' => null, // Dikosongkan agar bisa diklaim oleh departemen tujuan
                 'area_id' => $childAreaId,
                 'list_job' => "SPLIT DARI {$parentJob->id_job}: " . $itemsToMove->pluck('item_name')->implode(', '),
-                'balance' => $movedCount,
+                'balance' => $movedQtySum > 0 ? $movedQtySum : $movedCount,
                 'reason_description' => $parentJob->reason_description,
                 'remark' => "Pecahan dari {$parentJob->id_job}. Alasan: " . ($reasonNote ?: 'Pemecahan item pekerjaan'),
                 'tanggal_job_mulai' => null,
                 'deadline' => null,
-                'status' => JobStatus::ON_HOLD,
+                'status' => JobStatus::NEED_REVIEW,
                 'last_stage_update' => Carbon::now(),
             ]);
 
@@ -79,7 +90,7 @@ class SplitKanbanJobAction
 
             // 5. Sesuaikan saldo (balance) pada Job Induk
             $parentJob->update([
-                'balance' => $remainingItemsCount > 0 ? $remainingItemsCount : 0,
+                'balance' => $remainingQtySum,
                 'last_stage_update' => Carbon::now(),
             ]);
 
@@ -89,7 +100,7 @@ class SplitKanbanJobAction
                 'from_department_id' => $currentDeptId,
                 'to_department_id' => $targetDepartmentId,
                 'from_status' => null,
-                'to_status' => JobStatus::ON_HOLD,
+                'to_status' => JobStatus::NEED_REVIEW,
                 'note' => "SPLIT JOB CREATED dari {$parentJob->id_job}. Dipindahkan ke {$toDeptName}.\nCatatan: " . ($reasonNote ?: '-'),
                 'created_by' => $actionUserId,
                 'ip_address' => request()->ip(),

@@ -64,11 +64,11 @@
                             </a>
                         </li>
                     @endcan
-                    @can('view kanban marsho dashboard')
+                    @can('view kanban dashboard')
                         <li>
-                            <a href="{{ route('jobs.index') }}" class="{{ request()->is('jobs*') ? 'current' : '' }}">
+                            <a href="{{ route('kanban.jobs.index') }}" class="{{ request()->is('kanban/jobs*') ? 'current' : '' }}">
                                 <i class="icon-Commit"><span class="path1"></span><span class="path2"></span></i>
-                                Dashboard Kanban Marsho
+                                Dashboard Kanban
                             </a>
                         </li>
                     @endcan
@@ -209,52 +209,52 @@
             </li>
         @endcan
 
-        @can('view kanban marsho')
+        @can('view kanban')
             <li
-                class="{{ request()->is(['jobs*', 'areas*', 'marsho-departments*', 'marsho-users*', 'activity-logs*', 'reports/marsho-jobs*']) ? 'current' : '' }}">
+                class="{{ request()->is('kanban*') ? 'current' : '' }}">
                 <a href="#" style="font-size: 18px;">
                     <i data-feather="briefcase" style="width: 18px; height: 18px;"></i>
-                    Marsho JobBoard
+                    Kanban
                 </a>
                 <ul>
                     <li>
-                        <a href="{{ route('jobs.index') }}" class="{{ request()->is('jobs*') ? 'current' : '' }}">
+                        <a href="{{ route('kanban.jobs.index') }}" class="{{ request()->is('kanban/jobs*') ? 'current' : '' }}">
                             <i class="icon-Layout-4-blocks"><span class="path1"></span><span class="path2"></span></i>
-                            Jobs Kanban
+                            Kanban Board
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('areas.index') }}" class="{{ request()->is('areas*') ? 'current' : '' }}">
+                        <a href="{{ route('kanban.areas.index') }}" class="{{ request()->is('kanban/areas*') ? 'current' : '' }}">
                             <i class="icon-Map-pin"><span class="path1"></span><span class="path2"></span></i>
                             Manage Areas
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('marsho-departments.index') }}"
-                            class="{{ request()->is('marsho-departments*') ? 'current' : '' }}">
+                        <a href="{{ route('kanban.departments.index') }}"
+                            class="{{ request()->is('kanban/departments*') ? 'current' : '' }}">
                             <i class="icon-Users"><span class="path1"></span><span class="path2"></span></i>
                             Manage Departments
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('marsho-users.index') }}"
-                            class="{{ request()->is('marsho-users*') ? 'current' : '' }}">
+                        <a href="{{ route('kanban.users.index') }}"
+                            class="{{ request()->is('kanban/users*') ? 'current' : '' }}">
                             <i class="icon-Users"><span class="path1"></span><span class="path2"></span></i>
-                            Manage Marsho Users
+                            Manage Kanban Users
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('activity-logs.index') }}"
-                            class="{{ request()->is('activity-logs*') ? 'current' : '' }}">
+                        <a href="{{ route('kanban.activity-logs.index') }}"
+                            class="{{ request()->is('kanban/activity-logs*') ? 'current' : '' }}">
                             <i class="icon-History"><span class="path1"></span><span class="path2"></span></i>
                             Activity Logs
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('reports.marsho-jobs.page') }}"
-                            class="{{ request()->is('reports/marsho-jobs*') ? 'current' : '' }}">
+                        <a href="{{ route('kanban.reports.jobs.page') }}"
+                            class="{{ request()->is('kanban/reports*') ? 'current' : '' }}">
                             <i class="icon-File_Export"><span class="path1"></span><span class="path2"></span></i>
-                            Marsho Jobs Export
+                            Kanban Jobs Export
                         </a>
                     </li>
                 </ul>

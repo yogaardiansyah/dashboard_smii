@@ -5,10 +5,10 @@
     $progressPercent = $totalItems > 0 ? (int) round(($completedItems / $totalItems) * 100) : 0;
 @endphp
 
-<div class="flex flex-col h-full bg-white dark:bg-gray-800 rounded-lg">
+<div class="flex flex-col text-slate-800 dark:text-slate-200">
 
     <!-- Header & Info Utama -->
-    <div class="flex-shrink-0 p-5 space-y-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-t-lg">
+    <div class="p-6 space-y-4 border-b border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#111827]">
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
             <div>
@@ -102,13 +102,17 @@
         @if($totalItems > 0)
             <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-3.5 bg-white dark:bg-gray-800 shadow-sm">
                 <div class="flex justify-between items-center mb-2">
-                    <h5 class="font-bold text-xs text-gray-800 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <h5 class="font-bold text-xs text-gray-800 dark:text-gray-200 uppercase tracking-wider flex items-center gap-1.5 flex-wrap">
                         <span>Daftar Checklist Item</span>
                         <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.2 rounded-full font-bold">
                             {{ $completedItems }}/{{ $totalItems }} Selesai ({{ $progressPercent }}%)
                         </span>
+                        <span class="inline-flex items-center gap-1 text-[10px] font-bold bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600 px-2 py-0.5 rounded-full" title="Nomor Lot & Nama Item bersifat permanen/audit record">
+                            <svg class="w-3 h-3 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Data Terkunci (Read-Only)
+                        </span>
                     </h5>
-                    <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                    <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden flex-shrink-0">
                         <div class="h-2 rounded-full {{ $progressPercent === 100 ? 'bg-emerald-500' : 'bg-blue-600' }}"
                             style="width: {{ $progressPercent }}%"></div>
                     </div>
@@ -123,13 +127,25 @@
                                     data-job-id="{{ $job->id }}"
                                     data-item-id="{{ $item->id }}"
                                     data-item-name="{{ $item->item_name }}"
+                                    data-item-code="{{ $item->item_code }}"
+                                    data-item-lot="{{ $item->lot_number }}"
+                                    data-item-qty="{{ $item->qty }}"
+                                    data-item-unit="{{ $item->unit }}"
                                     {{ $item->is_completed ? 'checked' : '' }}
                                     {{ in_array($job->status, ['completed', 'closed', 'cancelled']) ? 'disabled' : '' }}>
                                 <span class="{{ $item->is_completed ? 'line-through text-gray-400 font-medium' : 'text-gray-800 dark:text-gray-200' }}">
                                     @if($item->item_code)
-                                        <span class="font-mono text-gray-400">[{{ $item->item_code }}]</span>
+                                        <span class="font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-1.5 py-0.5 rounded">[{{ $item->item_code }}]</span>
                                     @endif
-                                    {{ $item->item_name }}
+                                    <span>{{ $item->item_name }}</span>
+                                    @if($item->lot_number)
+                                        <span class="inline-block ml-1 px-1.5 py-0.2 text-[10px] font-mono font-bold rounded bg-amber-50 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-700">Lot: {{ $item->lot_number }}</span>
+                                    @endif
+                                    @if($item->qty)
+                                        <span class="inline-block ml-1 px-1.5 py-0.2 text-[10px] font-bold rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                            x{{ $item->qty }} {{ $item->unit ?? '' }}
+                                        </span>
+                                    @endif
                                 </span>
                             </label>
                             @if($item->is_completed)
@@ -150,9 +166,9 @@
     </div>
 
     <!-- Riwayat Aktivitas / Timeline -->
-    <div class="flex-1 overflow-y-auto min-h-0 p-5 custom-scrollbar bg-gray-50/50 dark:bg-gray-900/30 rounded-b-lg">
+    <div class="p-6 bg-slate-50/60 dark:bg-slate-900/40">
 
-        <h4 class="font-bold text-sm text-gray-800 dark:text-gray-200 mb-5 border-b border-gray-200 dark:border-gray-700 pb-2">
+        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200 mb-5 border-b border-slate-200 dark:border-slate-700 pb-2">
             Riwayat Jejak Audit & Timeline
         </h4>
 
@@ -179,6 +195,12 @@
                                 @else
                                     <h5 class="font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wide">Status / Catatan Progres</h5>
                                 @endif
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5 flex-wrap">
+                                    <span>Oleh: <strong class="text-slate-700 dark:text-slate-300">{{ $activity['creator']->name ?? 'System' }}</strong></span>
+                                    @if(!empty($activity['data']->ip_address))
+                                        <span class="font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.2 rounded text-[9px] text-slate-600 dark:text-slate-300">IP: {{ $activity['data']->ip_address }}</span>
+                                    @endif
+                                </div>
                             </div>
                             <span class="text-[10px] text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded whitespace-nowrap ml-2">
                                 {{ \Carbon\Carbon::parse($activity['timestamp'])->format('d M Y, H:i') }}
